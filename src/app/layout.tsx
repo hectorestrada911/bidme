@@ -29,9 +29,11 @@ export default function RootLayout({
         >
           <div className="flex min-h-screen flex-col">
             <main className="flex-1">{children}</main>
-            <HowItWorks />
-            <LiveRequests />
-            <Footer />
+            <div className="space-y-24">
+              <HowItWorks />
+              <LiveRequests />
+              <Footer />
+            </div>
           </div>
         </ThemeProvider>
       </body>
