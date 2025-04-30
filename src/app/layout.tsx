@@ -2,6 +2,8 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Footer } from "@/components/Footer"
+import { HowItWorks } from "@/components/HowItWorks"
+import { LiveRequests } from "@/components/LiveRequests"
 import "@/app/globals.css"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -27,6 +29,8 @@ export default function RootLayout({
         >
           <div className="flex min-h-screen flex-col">
             <main className="flex-1">{children}</main>
+            <HowItWorks />
+            <LiveRequests />
             <Footer />
           </div>
         </ThemeProvider>
