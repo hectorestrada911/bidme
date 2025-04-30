@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
-import { ChevronRight, Lock, Star, Shield } from "lucide-react"
+import { ChevronRight, Lock, Star, Shield, Quote } from "lucide-react"
 import Link from "next/link"
 
 export default function Home() {
@@ -62,6 +62,20 @@ export default function Home() {
               <Shield className="h-4 w-4 text-blue-500" />
               <span>24/7 Support</span>
             </motion.div>
+          </motion.div>
+
+          {/* Micro-testimonial */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
+            className="mt-6 text-sm text-muted-foreground/60 flex items-center justify-center gap-2"
+          >
+            <Quote className="h-3 w-3 text-blue-500/70" />
+            <p className="italic">
+              BidMe cut our sourcing time by 80% and saved us $50K in Q1 alone.
+              <span className="ml-1 font-medium not-italic">– TechCorp Industries</span>
+            </p>
           </motion.div>
         </div>
 
