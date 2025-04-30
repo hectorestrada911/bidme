@@ -36,6 +36,13 @@ const sampleRequests = [
     deadline: "July 1, 2024",
     budget: "$800",
   },
+  {
+    id: 6,
+    item: "Solar Panels (400W)",
+    quantity: 100,
+    deadline: "July 15, 2024",
+    budget: "$35,000",
+  }
 ]
 
 export function LiveRequests() {
