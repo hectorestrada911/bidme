@@ -59,7 +59,7 @@ export function LiveRequests() {
         </div>
         <div className="flex justify-center">
           <Button asChild size="lg">
-            <a href="/post-request">Post Your Request</a>
+            <a href="/post-request">Tell Us What You Want</a>
           </Button>
         </div>
       </div>

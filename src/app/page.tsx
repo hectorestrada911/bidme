@@ -15,14 +15,14 @@ export default function Home() {
         className="flex flex-col items-center space-y-8 text-center"
       >
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-          Get the Best Deal
+          Connect with Suppliers<br />at Lightning Speed
         </h1>
         <h2 className="max-w-[42rem] text-lg text-muted-foreground sm:text-xl">
-          Sellers compete to give you the lowest price in real time.
+          Simply post your request—see top suppliers deliver their best price, terms and delivery estimates instantly.
         </h2>
         <div className="flex flex-col gap-4 sm:flex-row">
           <Button asChild size="lg">
-            <Link href="/post-request">Get the Best Deal</Link>
+            <Link href="/post-request">Tell Us What You Want</Link>
           </Button>
           <Button asChild variant="outline" size="lg">
             <Link href="/seller-signup">Start Selling Now</Link>
