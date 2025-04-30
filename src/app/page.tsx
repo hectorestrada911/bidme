@@ -7,7 +7,7 @@ import Link from "next/link"
 
 export default function Home() {
   return (
-    <section className="relative flex flex-col items-center justify-center min-h-[90vh] bg-gradient-to-b from-background to-muted">
+    <section className="relative flex flex-col items-center justify-center min-h-[90vh] bg-gradient-to-b from-background to-muted overflow-hidden">
       {/* Subtle gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/5 to-background/10 pointer-events-none" />
       
@@ -17,7 +17,7 @@ export default function Home() {
         transition={{ duration: 0.5 }}
         className="relative flex flex-col items-center space-y-8 text-center px-4 max-w-[1200px] mx-auto"
       >
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
+        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl text-shadow">
           Connect with Suppliers<br />at Lightning Speed
         </h1>
         <p className="max-w-xl mx-auto text-lg text-muted-foreground/80 sm:text-xl">
