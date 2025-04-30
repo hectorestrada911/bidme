@@ -7,9 +7,9 @@ import Link from "next/link"
 
 export default function Home() {
   return (
-    <section className="relative flex flex-col items-center justify-center h-screen bg-gradient-to-b from-background to-muted overflow-hidden">
+    <section className="relative flex flex-col items-center justify-center h-screen bg-gradient-to-b from-blue-950/50 via-[#0d1219] to-[#0a0d12] overflow-hidden">
       {/* Subtle gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/5 to-background/10 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-blue-900/10 via-background/20 to-[#0a0d12]/80 pointer-events-none" />
       
       <motion.div
         initial={{ opacity: 0, y: 20 }}
