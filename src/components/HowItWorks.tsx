@@ -1,4 +1,6 @@
-import { ClipboardList, TrendingUp, CheckCircle } from "lucide-react"
+import { ClipboardList, TrendingUp, CheckCircle, ArrowRight } from "lucide-react"
+import { Button } from "../components/ui/button"
+import Link from "next/link"
 
 export function HowItWorks() {
   return (
@@ -38,6 +40,15 @@ export function HowItWorks() {
               Select the best deal and enjoy your savings.
             </p>
           </div>
+        </div>
+
+        <div className="mt-12 text-center">
+          <Button asChild variant="outline" className="gap-2">
+            <Link href="/post-request">
+              See Live Requests
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </Button>
         </div>
       </div>
     </section>
