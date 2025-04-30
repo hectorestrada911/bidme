@@ -51,7 +51,7 @@ const sampleRequests = [
 
 export function LiveRequests() {
   return (
-    <section className="bg-background py-16">
+    <section className="bg-[#0a0d12] py-24">
       <div className="container mx-auto px-4">
         <motion.h2 
           initial={{ opacity: 0, y: 20 }}
@@ -70,7 +70,7 @@ export function LiveRequests() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="rounded-lg border border-gray-800 bg-gray-900 p-6 flex flex-col gap-4 shadow-sm"
+              className="rounded-lg border border-gray-800 bg-[#0f1318] p-6 flex flex-col gap-4 shadow-sm"
             >
               <div className="font-semibold text-lg text-white">{req.item}</div>
               <div className="text-gray-400 text-sm">Quantity: <span className="text-white font-medium">{req.quantity}</span></div>

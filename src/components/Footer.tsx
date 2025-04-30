@@ -4,7 +4,7 @@ import { Button } from "../components/ui/button"
 
 export function Footer() {
   return (
-    <footer className="bg-gray-900 text-white">
+    <footer className="bg-background/50 text-white">
       <div className="mx-auto max-w-7xl px-6 py-12">
         <div className="grid gap-8 md:grid-cols-3">
           {/* Brand Column */}
@@ -54,7 +54,7 @@ export function Footer() {
               <Input
                 type="email"
                 placeholder="Enter your email"
-                className="bg-gray-800 text-white placeholder:text-gray-400"
+                className="bg-background/50 text-white placeholder:text-gray-400"
               />
               <Button>Subscribe</Button>
             </div>
