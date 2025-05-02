@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ArrowLeft } from "lucide-react"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 interface FormData {
   item: string
@@ -22,6 +24,7 @@ interface FormErrors {
 }
 
 export default function PostRequest() {
+  const router = useRouter()
   const [formData, setFormData] = useState<FormData>({
     item: '',
     quantity: 1,
@@ -30,6 +33,7 @@ export default function PostRequest() {
   })
 
   const [errors, setErrors] = useState<FormErrors>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {}
@@ -55,10 +59,37 @@ export default function PostRequest() {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (validateForm()) {
-      console.log('Form submitted:', formData)
+    
+    if (!validateForm()) {
+      return
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      const response = await fetch('/api/requests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to submit request')
+      }
+
+      toast.success('Request submitted successfully!')
+      router.push('/')
+    } catch (error) {
+      console.error('Error submitting request:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to submit request')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -154,8 +185,9 @@ export default function PostRequest() {
             <Button 
               type="submit" 
               className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+              disabled={isSubmitting}
             >
-              Send Request
+              {isSubmitting ? 'Submitting...' : 'Send Request'}
             </Button>
           </form>
 
