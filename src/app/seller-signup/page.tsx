@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ArrowLeft } from "lucide-react"
 import { useState } from "react"
+import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 interface FormData {
   businessName: string
@@ -33,6 +35,8 @@ export default function SellerSignup() {
   })
 
   const [errors, setErrors] = useState<FormErrors>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const router = useRouter()
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {}
@@ -69,10 +73,24 @@ export default function SellerSignup() {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (validateForm()) {
-      console.log('Form submitted:', formData)
+    if (!validateForm()) return
+    setIsSubmitting(true)
+    try {
+      const response = await fetch('/api/sellers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || 'Failed to submit application')
+      toast.success('Seller application submitted!')
+      router.push('/')
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to submit application')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -176,8 +194,9 @@ export default function SellerSignup() {
             <Button 
               type="submit" 
               className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+              disabled={isSubmitting}
             >
-              Submit Application
+              {isSubmitting ? 'Submitting...' : 'Submit Application'}
             </Button>
           </form>
 
