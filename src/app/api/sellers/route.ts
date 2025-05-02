@@ -2,11 +2,10 @@ import { NextResponse } from 'next/server'
 
 interface Seller {
   id: string
-  businessName: string
+  company: string
   email: string
   phone: string
-  businessType: string
-  description: string
+  website: string
   createdAt: string
 }
 
@@ -15,32 +14,36 @@ let sellers: Seller[] = []
 export async function POST(request: Request) {
   try {
     const body = await request.json()
-    const { businessName, email, phone, businessType, description } = body
+    const { company, email, phone, website } = body
 
     // Validate required fields
-    if (!businessName || !email || !phone || !businessType || !description) {
+    if (!company || !email || !phone || !website) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
     // Validate types
     if (
-      typeof businessName !== 'string' ||
+      typeof company !== 'string' ||
       typeof email !== 'string' ||
       typeof phone !== 'string' ||
-      typeof businessType !== 'string' ||
-      typeof description !== 'string'
+      typeof website !== 'string'
     ) {
       return NextResponse.json({ error: 'Invalid field types' }, { status: 400 })
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      return NextResponse.json({ error: 'Invalid email format' }, { status: 400 })
     }
 
     // Create new seller
     const newSeller: Seller = {
       id: Date.now().toString(),
-      businessName,
+      company,
       email,
       phone,
-      businessType,
-      description,
+      website,
       createdAt: new Date().toISOString()
     }
 
