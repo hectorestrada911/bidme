@@ -7,7 +7,7 @@ import { motion } from "framer-motion"
 
 export function HowItWorks() {
   return (
-    <section className="bg-[#0a0d12] text-white py-12">
+    <section id="how-it-works" className="bg-[#0a0d12] text-white py-12">
       <div className="container mx-auto px-4">
         <motion.h2 
           initial={{ opacity: 0, y: 20 }}
