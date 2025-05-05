@@ -53,17 +53,19 @@ export function LiveRequests() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
             {requests.map((req) => (
-              <Card key={req.id} className="rounded-lg border border-gray-800 bg-[#0f1318] p-6 flex flex-col gap-4 shadow-sm">
-                <h3 className="text-lg font-semibold text-white mb-2">{req.item}</h3>
-                <div className="text-gray-400 text-sm space-y-1">
-                  <div>Quantity: {req.quantity}</div>
-                  <div>Budget: ${req.budget}</div>
-                  <div>Needed by: {new Date(req.neededBy).toLocaleDateString()}</div>
-                </div>
-                <Button variant="outline" className="w-full border-blue-400 text-blue-400 hover:bg-blue-400/10 mt-4">
-                  Make an Offer
-                </Button>
-              </Card>
+              <Link key={req.id} href={`/requests/${req.id}`} className="block">
+                <Card className="rounded-lg border border-gray-800 bg-[#0f1318] p-6 flex flex-col gap-4 shadow-sm hover:border-blue-400 transition-colors cursor-pointer">
+                  <h3 className="text-lg font-semibold text-white mb-2">{req.item}</h3>
+                  <div className="text-gray-400 text-sm space-y-1">
+                    <div>Quantity: {req.quantity}</div>
+                    <div>Budget: ${req.budget}</div>
+                    <div>Needed by: {new Date(req.neededBy).toLocaleDateString()}</div>
+                  </div>
+                  <Button variant="outline" className="w-full border-blue-400 text-blue-400 hover:bg-blue-400/10 mt-4">
+                    Make an Offer
+                  </Button>
+                </Card>
+              </Link>
             ))}
           </div>
         )}
