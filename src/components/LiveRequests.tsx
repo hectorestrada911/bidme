@@ -61,7 +61,7 @@ export function LiveRequests() {
                   <div>Needed by: {new Date(req.neededBy).toLocaleDateString()}</div>
                 </div>
                 <Button variant="outline" className="w-full border-blue-400 text-blue-400 hover:bg-blue-400/10 mt-4">
-                  View Details
+                  Make an Offer
                 </Button>
               </Card>
             ))}
