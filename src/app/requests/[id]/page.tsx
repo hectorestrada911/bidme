@@ -1,9 +1,10 @@
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/lib/prisma'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 
-const prisma = new PrismaClient()
+const OffersSection = dynamic(() => import('./OffersSection'), { ssr: false })
 
 export default async function RequestDetailPage({ params }: { params: { id: string } }) {
   const request = await prisma.request.findUnique({ where: { id: params.id } })
@@ -31,11 +32,7 @@ export default async function RequestDetailPage({ params }: { params: { id: stri
           <div><span className="font-semibold text-white">Needed By:</span> {request.deadline}</div>
           <div><span className="font-semibold text-white">Posted:</span> {new Date(request.createdAt).toLocaleString()}</div>
         </div>
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold mb-2">Offers</h2>
-          <div className="text-gray-400">(Offers will appear here in the next step.)</div>
-        </div>
-        <Button className="w-full" variant="outline">Make an Offer</Button>
+        <OffersSection requestId={request.id} />
       </Card>
     </div>
   )
