@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { requests, Request as RFQRequest } from '@/lib/store'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,16 +29,15 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
-    // Create new request
-    const newRequest: RFQRequest = {
-      id: Date.now().toString(),
-      item: body.item,
-      quantity: body.quantity,
-      budget: body.budget,
-      deadline: body.deadline,
-      createdAt: new Date().toISOString()
-    }
-    requests.push(newRequest)
+    // Create new request in DB
+    const newRequest = await prisma.request.create({
+      data: {
+        item: body.item,
+        quantity: body.quantity,
+        budget: body.budget,
+        deadline: body.deadline,
+      }
+    })
     return NextResponse.json(newRequest, { status: 201 })
   } catch (error) {
     return NextResponse.json(
@@ -47,5 +48,6 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET() {
-  return NextResponse.json(requests)
+  const allRequests = await prisma.request.findMany({ orderBy: { createdAt: 'desc' } })
+  return NextResponse.json(allRequests)
 } 
