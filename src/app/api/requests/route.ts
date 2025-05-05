@@ -1,66 +1,44 @@
 import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
+import { requests, Request as RFQRequest } from '@/lib/store'
 
-interface Request {
-  id: string
-  item: string
-  quantity: number
-  budget: number
-  neededBy: string
-  createdAt: string
-}
-
-// In-memory storage for requests
-let requests: Request[] = []
-
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-
     // Validate required fields
-    if (!body.item || !body.quantity || !body.budget || !body.neededBy) {
+    if (!body.item || !body.quantity || !body.budget || !body.deadline) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       )
     }
-
-    // Validate types
+    // Validate types and values
     if (
       typeof body.item !== 'string' ||
       typeof body.quantity !== 'number' ||
       typeof body.budget !== 'number' ||
-      typeof body.neededBy !== 'string'
+      typeof body.deadline !== 'string' ||
+      body.quantity < 1 ||
+      body.budget < 1 ||
+      body.deadline < new Date().toISOString().split('T')[0]
     ) {
       return NextResponse.json(
-        { error: 'Invalid field types' },
+        { error: 'Invalid field types or values' },
         { status: 400 }
       )
     }
-
-    // Validate values
-    if (body.quantity < 1 || body.budget < 1) {
-      return NextResponse.json(
-        { error: 'Quantity and budget must be at least 1' },
-        { status: 400 }
-      )
-    }
-
     // Create new request
-    const newRequest: Request = {
+    const newRequest: RFQRequest = {
       id: Date.now().toString(),
       item: body.item,
       quantity: body.quantity,
       budget: body.budget,
-      neededBy: body.neededBy,
+      deadline: body.deadline,
       createdAt: new Date().toISOString()
     }
-
-    // Add to in-memory storage
     requests.push(newRequest)
-
-    return NextResponse.json({ success: true, request: newRequest })
+    return NextResponse.json(newRequest, { status: 201 })
   } catch (error) {
-    console.error('Error processing request:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
