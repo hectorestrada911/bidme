@@ -11,10 +11,22 @@ datasource db {
 }
 
 model Request {
-  id        String   @id @default(cuid())
-  item      String
-  quantity  Int
-  budget    Int
-  deadline  String
-  createdAt DateTime @default(now())
+  id              String   @id @default(cuid())
+  item            String
+  quantity        Int
+  budget          Int
+  deadline        String
+  createdAt       DateTime @default(now())
+  offers          Offer[]
+  acceptedOfferId String?
+}
+
+model Offer {
+  id         String   @id @default(cuid())
+  request    Request  @relation(fields: [requestId], references: [id])
+  requestId  String
+  sellerName String
+  amount     Int
+  message    String
+  createdAt  DateTime @default(now())
 }
