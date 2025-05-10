@@ -3,6 +3,7 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Footer } from "@/components/Footer"
+import Header from "@/components/Header"
 import { HowItWorks } from "@/components/HowItWorks"
 import { LiveRequests } from "@/components/LiveRequests"
 import { Toaster } from "sonner"
@@ -28,13 +29,12 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="min-h-screen flex flex-col">
-            <main>{children}</main>
-            <div>
-              <HowItWorks />
-              <LiveRequests />
-              <Footer />
-            </div>
+          <Header />
+          <main>{children}</main>
+          <div>
+            <HowItWorks />
+            <LiveRequests />
+            <Footer />
           </div>
           <Toaster richColors position="top-center" />
         </ThemeProvider>
