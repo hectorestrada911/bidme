@@ -3,10 +3,23 @@
 import { useEffect, useState } from "react"
 import OfferForm from "./OfferForm"
 import { Card } from "@/components/ui/card"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
+import { useSession } from "next-auth/react"
 
 export default function OffersSection({ requestId }: { requestId: string }) {
   const [offers, setOffers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const { data: session, status } = useSession();
+  const router = useRouter()
+
+  useEffect(() => {
+    if (status === 'loading') return;
+    if (!session?.user?.id) {
+      toast.error('Please sign in to view offers')
+      router.push('/auth/signin')
+    }
+  }, [session, status, router]);
 
   const fetchOffers = async () => {
     setLoading(true)
@@ -46,7 +59,13 @@ export default function OffersSection({ requestId }: { requestId: string }) {
       </div>
       <div className="mt-8">
         <h2 className="text-lg font-semibold mb-2">Make an Offer</h2>
-        <OfferForm requestId={requestId} onOfferSubmitted={fetchOffers} />
+        {session?.user?.id ? (
+          <OfferForm requestId={requestId} onOfferSubmitted={fetchOffers} />
+        ) : (
+          <div className="text-gray-400">
+            Please sign in to make an offer
+          </div>
+        )}
       </div>
     </div>
   )

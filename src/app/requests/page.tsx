@@ -3,23 +3,14 @@ import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import dynamic from 'next/dynamic'
-
-const CATEGORY_OPTIONS = [
-  'All',
-  'Electronics',
-  'Home',
-  'Services',
-  'Office Supplies',
-  'Automotive',
-  'Other',
-]
+import { CATEGORY_OPTIONS } from '@/lib/categories'
 
 const CategoryFilter = dynamic(() => import('./CategoryFilter'), { ssr: false })
 
 export default async function RequestsPage({ searchParams }: { searchParams?: { category?: string } }) {
   const allRequests = await prisma.request.findMany({ orderBy: { createdAt: 'desc' } })
   const category = searchParams?.category || 'All'
-  const requests = category === 'All' ? allRequests : allRequests.filter((r: any) => r.category === category)
+  const requests = category === 'All' ? allRequests : allRequests.filter((r) => r.category === category)
 
   return (
     <div className="min-h-screen bg-[#0a0d12] py-16 px-4">
@@ -38,15 +29,15 @@ export default async function RequestsPage({ searchParams }: { searchParams?: { 
           {requests.length === 0 ? (
             <div className="text-gray-400 col-span-full text-center">No requests found for this category.</div>
           ) : (
-            requests.map((req: any) => (
+            requests.map((req) => (
               <Link key={req.id} href={`/requests/${req.id}`} className="block">
                 <Card className="rounded-lg border border-gray-800 bg-[#0f1318] p-6 flex flex-col gap-4 shadow-sm hover:border-blue-400 transition-colors cursor-pointer">
-                  <h3 className="text-lg font-semibold text-white mb-2">{req.item}</h3>
+                  <h3 className="text-lg font-semibold text-white mb-2">{req.title}</h3>
                   <div className="text-gray-400 text-sm space-y-1">
                     <div>Category: {req.category}</div>
                     <div>Quantity: {req.quantity}</div>
                     <div>Budget: ${req.budget}</div>
-                    <div>Needed by: {new Date(req.deadline || req.neededBy).toLocaleDateString()}</div>
+                    <div>Deadline: {new Date(req.deadline).toLocaleDateString()}</div>
                   </div>
                   <Button variant="outline" className="w-full border-blue-400 text-blue-400 hover:bg-blue-400/10 mt-4">
                     Make an Offer

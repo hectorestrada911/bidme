@@ -4,9 +4,9 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Footer } from "@/components/Footer"
 import Header from "@/components/Header"
-import { HowItWorks } from "@/components/HowItWorks"
 import { LiveRequests } from "@/components/LiveRequests"
 import { Toaster } from "sonner"
+import { AuthProvider } from "@/components/AuthProvider"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -21,24 +21,19 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <Header />
-          <main>{children}</main>
-          <div>
-            <HowItWorks />
-            <LiveRequests />
-            <Footer />
-          </div>
-          <Toaster richColors position="top-center" />
-        </ThemeProvider>
+    <html lang="en" suppressHydrationWarning className="dark">
+      <body className={`${inter.className} min-h-screen bg-background text-foreground antialiased`}>
+        <AuthProvider>
+          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
+            <div className="relative flex min-h-screen flex-col">
+              <Header />
+              <main className="flex-1">{children}</main>
+              <Footer />
+            </div>
+            <Toaster position="top-center" richColors />
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   )
-} 
+}

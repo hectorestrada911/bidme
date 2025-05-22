@@ -2,66 +2,140 @@
 
 import { useEffect, useState } from "react"
 import { Card } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
+import { Badge } from '@/components/ui/badge'
+import { CATEGORY_OPTIONS } from '@/lib/categories'
 
-interface Seller {
+interface Request {
   id: string
-  company: string
-  email: string
-  phone: string
-  website: string
-  createdAt: string
+  title: string
+  description: string
+  budget: number
+  deadline: string
+  category: string
+  quantity: number
+  status: string
+  userId: string
+  user: {
+    name: string | null
+    image: string | null
+  }
+  _count: {
+    offers: number
+  }
+  statusHistory: {
+    id: string
+    status: string
+    timestamp: string
+    reason?: string
+  }[]
+  acceptedOfferId?: string | null
 }
 
-export default function SuppliersPage() {
-  const [sellers, setSellers] = useState<Seller[]>([])
+export default function RequestBrowserPage() {
+  const [requests, setRequests] = useState<Request[]>([])
   const [loading, setLoading] = useState(true)
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  const categories = CATEGORY_OPTIONS
 
   useEffect(() => {
-    async function fetchSellers() {
+    async function fetchRequests() {
       try {
-        const res = await fetch("/api/sellers")
+        const url = new URL("/api/requests", window.location.origin)
+        if (selectedCategory) {
+          url.searchParams.append('category', selectedCategory)
+        }
+        url.searchParams.append('all', 'true')
+
+        const res = await fetch(url.toString())
+        if (!res.ok) {
+          const errorData = await res.json()
+          throw new Error(errorData.error || 'Failed to fetch requests')
+        }
         const data = await res.json()
-        setSellers(data)
+        if (data.error) {
+          throw new Error(data.error)
+        }
+        if (Array.isArray(data)) {
+          setRequests(data)
+        } else {
+          setRequests([])
+          setError('Invalid response format from server')
+        }
       } catch (err) {
-        setSellers([])
+        console.error('Error fetching requests:', err)
+        setRequests([])
+        setError(err instanceof Error ? err.message : 'Failed to fetch requests')
       } finally {
         setLoading(false)
       }
     }
-    fetchSellers()
-  }, [])
+    fetchRequests()
+  }, [selectedCategory])
 
   return (
-    <div className="min-h-screen bg-[#0a0d12] flex flex-col items-center py-12 px-4">
-      <h1 className="text-3xl font-bold text-white mb-8">Our Suppliers</h1>
-      {loading ? (
-        <div className="text-gray-400">Loading suppliers...</div>
-      ) : sellers.length === 0 ? (
-        <div className="text-gray-400">No suppliers have signed up yet.</div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-5xl">
-          {sellers.map(seller => (
-            <Card key={seller.id} className="p-6 bg-[#0f1318] border-gray-800">
-              <h2 className="text-xl font-semibold text-white mb-2">{seller.company}</h2>
-              <div className="text-gray-300 space-y-1">
-                <div>
-                  <span className="font-medium">Email: </span>
-                  <a href={`mailto:${seller.email}`} className="text-blue-400 hover:underline">{seller.email}</a>
-                </div>
-                <div>
-                  <span className="font-medium">Phone: </span>{seller.phone}
-                </div>
-                <div>
-                  <span className="font-medium">Website: </span>
-                  <a href={seller.website} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
-                    {seller.website}
-                  </a>
-                </div>
-              </div>
-            </Card>
+    <div className="min-h-screen bg-[#0a0d12] flex flex-col items-center pt-24 pb-12 px-4">
+      <div className="w-full max-w-5xl">
+        <h1 className="text-3xl font-bold text-white mb-8">Browse Open Requests</h1>
+        
+        {/* Category Filters */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          <Button
+            variant={selectedCategory === null ? "default" : "outline"}
+            onClick={() => setSelectedCategory(null)}
+          >
+            All Requests
+          </Button>
+          {categories.map(category => (
+            <Button
+              key={category.value}
+              variant={selectedCategory === category.value ? "default" : "outline"}
+              onClick={() => setSelectedCategory(category.value)}
+            >
+              {category.label}
+            </Button>
           ))}
         </div>
-      )}
+
+        {error ? (
+          <div className="text-red-400">Error: {error}</div>
+        ) : loading ? (
+          <div className="text-gray-400">Loading requests...</div>
+        ) : requests?.length === 0 ? (
+          <div className="text-gray-400">No open requests available.</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {requests.map(request => (
+              <Card key={request.id} className="p-6 bg-[#0f1318] border-gray-800 flex flex-col">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-semibold text-white">{request.title}</h2>
+                  <Badge variant="secondary">{request.category}</Badge>
+                </div>
+                <p className="text-gray-300 mb-4 flex-grow">
+                  {request.description.length > 100 
+                    ? `${request.description.slice(0, 100)}...` 
+                    : request.description
+                  }
+                </p>
+                <div className="space-y-2 text-gray-400">
+                  <div>Budget: ${request.budget}</div>
+                  <div>Quantity: {request.quantity}</div>
+                  <div>Deadline: {new Date(request.deadline).toLocaleDateString()}</div>
+                  <div>Offers: {request._count.offers}</div>
+                </div>
+                <Link href={`/requests/${request.id}`} className="mt-4">
+                  <Button variant="outline" className="w-full">
+                    View Details & Make Offer
+                  </Button>
+                </Link>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
-} 
+}

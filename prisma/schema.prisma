@@ -10,23 +10,125 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum RequestStatus {
+  OPEN
+  PENDING
+  ACCEPTED
+  CANCELLED
+  COMPLETED
+}
+
+enum OfferStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
+
 model Request {
   id              String   @id @default(cuid())
-  item            String
+  title           String
+  description     String
   quantity        Int
   budget          Int
-  deadline        String
+  deadline        DateTime
   createdAt       DateTime @default(now())
-  offers          Offer[]
-  acceptedOfferId String?
+  updatedAt       DateTime @updatedAt
+  status          String   @default("OPEN")
+  category        String   @default("Other")
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  acceptedOfferId String?  @unique
+  offers          Offer[]  @relation("RequestOffers")
+  statusHistory   StatusHistory[]
+}
+
+model StatusHistory {
+  id        String   @id @default(cuid())
+  status    RequestStatus
+  timestamp DateTime @default(now())
+  reason    String?
+  requestId String
+  request   Request  @relation(fields: [requestId], references: [id])
+
+  @@index([requestId])
 }
 
 model Offer {
-  id         String   @id @default(cuid())
-  request    Request  @relation(fields: [requestId], references: [id])
-  requestId  String
-  sellerName String
-  amount     Int
-  message    String
-  createdAt  DateTime @default(now())
+  id            String   @id @default(cuid())
+  requestId     String
+  amount        Int
+  message       String
+  sellerName    String?
+  credentials   String?
+  deliveryDate  DateTime?
+  status        String   @default("PENDING")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  userId        String?
+  paymentId     String?
+  paymentStatus String   @default("PENDING")
+  request       Request  @relation("RequestOffers", fields: [requestId], references: [id])
+  user          User?    @relation(fields: [userId], references: [id])
+  statusHistory OfferStatusHistory[]
+}
+
+model OfferStatusHistory {
+  id        String    @id @default(cuid())
+  status    OfferStatus
+  timestamp DateTime  @default(now())
+  reason    String?
+  offerId   String
+  offer     Offer     @relation(fields: [offerId], references: [id])
+
+  @@index([offerId])
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  requests      Request[]
+  offers        Offer[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) // For migration
+}
+
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?
+  access_token       String?
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?
+  session_state      String?
+  user               User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires   DateTime
+
+  @@unique([identifier, token])
 }
