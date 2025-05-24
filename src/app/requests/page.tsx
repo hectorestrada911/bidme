@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button'
 import dynamic from 'next/dynamic'
 import { CATEGORY_OPTIONS } from '@/lib/categories'
 
+export const dynamic = 'force-dynamic'
+
 const CategoryFilter = dynamic(() => import('./CategoryFilter'), { ssr: false })
 
 export default async function RequestsPage({ searchParams }: { searchParams?: { category?: string } }) {

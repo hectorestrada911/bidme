@@ -1,7 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { redirect } from "next/navigation"
@@ -10,6 +9,8 @@ import Link from "next/link"
 import OfferForm from "./OfferForm"
 import { revalidatePath } from "next/cache"
 import dynamic from 'next/dynamic'
+
+export const dynamic = 'force-dynamic'
 
 const OffersSection = dynamic(() => import('./OffersSection'), { ssr: false })
 

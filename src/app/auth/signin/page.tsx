@@ -8,8 +8,17 @@ import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect } from "react"
+import React, { Suspense } from 'react'
 
 export default function SignIn() {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen text-white">Loading...</div>}>
+      <SignInContent />
+    </Suspense>
+  )
+}
+
+function SignInContent() {
   const router = useRouter()
   const { data: session, status } = useSession()
   const searchParams = useSearchParams()

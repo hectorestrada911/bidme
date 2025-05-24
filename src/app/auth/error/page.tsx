@@ -1,5 +1,6 @@
 'use client'
 
+import React, { Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -7,6 +8,14 @@ import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 
 export default function AuthError() {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen text-white">Loading...</div>}>
+      <AuthErrorContent />
+    </Suspense>
+  )
+}
+
+function AuthErrorContent() {
   const searchParams = useSearchParams()
   const error = searchParams.get('error')
 
