@@ -8,11 +8,11 @@ import { PrismaClient } from "@prisma/client"
 import Link from "next/link"
 import OfferForm from "./OfferForm"
 import { revalidatePath } from "next/cache"
-import dynamic from 'next/dynamic'
+import NextDynamic from 'next/dynamic'
 
 export const dynamic = 'force-dynamic'
 
-const OffersSection = dynamic(() => import('./OffersSection'), { ssr: false })
+const OffersSection = NextDynamic(() => import('./OffersSection'), { ssr: false })
 
 const prismaClient = new PrismaClient()
 

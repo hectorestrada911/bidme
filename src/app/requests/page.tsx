@@ -2,12 +2,12 @@ import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import dynamic from 'next/dynamic'
+import NextDynamic from 'next/dynamic'
 import { CATEGORY_OPTIONS } from '@/lib/categories'
 
 export const dynamic = 'force-dynamic'
 
-const CategoryFilter = dynamic(() => import('./CategoryFilter'), { ssr: false })
+const CategoryFilter = NextDynamic(() => import('./CategoryFilter'), { ssr: false })
 
 export default async function RequestsPage({ searchParams }: { searchParams?: { category?: string } }) {
   const allRequests = await prisma.request.findMany({ orderBy: { createdAt: 'desc' } })
