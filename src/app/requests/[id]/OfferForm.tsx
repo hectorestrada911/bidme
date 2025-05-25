@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { DollarSign, Calendar, Briefcase, MessageSquare, User } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Card } from "@/components/ui/card"
+import { useRouter } from "next/navigation"
+import toast from "react-hot-toast"
 
 interface FormData {
   sellerName: string
@@ -37,6 +39,9 @@ export default function OfferForm({ requestId, onOfferSubmitted = () => {} }: { 
   const [errors, setErrors] = useState<FormErrors>({})
   const [loading, setLoading] = useState(false)
   const { data: session, status } = useSession();
+  const router = useRouter()
+  const [redirectTimeout, setRedirectTimeout] = useState<NodeJS.Timeout | null>(null)
+  const [redirecting, setRedirecting] = useState(false)
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -118,6 +123,40 @@ export default function OfferForm({ requestId, onOfferSubmitted = () => {} }: { 
       
       // Call onOfferSubmitted if provided
       onOfferSubmitted()
+
+      setRedirecting(true)
+      const timeout = setTimeout(() => {
+        router.push("/profile")
+      }, 5000)
+      setRedirectTimeout(timeout)
+      toast(
+        t => (
+          <div className="bg-blue-950 text-white p-4 rounded-lg shadow-lg flex flex-col items-center min-w-[300px]">
+            <div className="font-semibold text-lg mb-1">Your offer has been submitted!</div>
+            <div className="text-blue-200 mb-2">Redirecting to your profile in 5 seconds.</div>
+            <div className="flex gap-4">
+              <a
+                href="/profile"
+                className="px-3 py-1 rounded bg-blue-600 hover:bg-blue-700 text-white font-medium transition"
+                onClick={() => {
+                  if (redirectTimeout) clearTimeout(redirectTimeout)
+                  toast.dismiss(t.id)
+                  router.push("/profile")
+                }}
+              >Go to Profile Now</a>
+              <button
+                className="px-3 py-1 rounded bg-red-500 hover:bg-red-600 text-white font-medium transition"
+                onClick={() => {
+                  if (redirectTimeout) clearTimeout(redirectTimeout)
+                  setRedirecting(false)
+                  toast.dismiss(t.id)
+                }}
+              >Cancel</button>
+            </div>
+          </div>
+        ),
+        { duration: 5000 }
+      )
     } catch (err: any) {
       // Update errors state with submission error
       setErrors(prev => ({ ...prev, submit: err.message }))
