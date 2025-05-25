@@ -148,7 +148,7 @@ export default function ProfilePage() {
   }, [status])
 
   // Handler for accepting/rejecting offers
-  async function handleOfferStatusChange(offerId: string, newStatus: 'ACCEPTED' | 'REJECTED' | 'DELIVERED') {
+  async function handleOfferStatusChange(offerId: string, newStatus: 'ACCEPTED' | 'REJECTED' | 'DELIVERED' | 'COMPLETED') {
     setOfferActionLoading(offerId + newStatus)
     try {
       const res = await fetch(`/api/offers/${offerId}/status`, {
@@ -550,31 +550,45 @@ export default function ProfilePage() {
                             {offer.request.userId === session?.user?.id ? (
                               <>
                                 <div className="flex gap-2">
-                                  <Button
-                                    size="sm"
-                                    variant="default"
-                                    className="bg-green-500 hover:bg-green-600 text-white"
-                                    disabled={offerActionLoading === offer.id + 'ACCEPTED' || paymentLoading === offer.id}
-                                    onClick={() => handleAcceptWithPayment(offer.id)}
-                                  >
-                                    {paymentLoading === offer.id ? (
-                                      <div className="flex items-center gap-1">
-                                        <span>Redirecting...</span>
-                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                      </div>
-                                    ) : (
-                                      'Accept & Pay'
-                                    )}
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    className="border-red-400 text-red-400 hover:bg-red-500/10"
-                                    disabled={offerActionLoading === offer.id + 'REJECTED'}
-                                    onClick={() => handleOfferStatusChange(offer.id, 'REJECTED')}
-                                  >
-                                    {offerActionLoading === offer.id + 'REJECTED' ? 'Rejecting...' : 'Reject'}
-                                  </Button>
+                                  {offer.status === 'DELIVERED' ? (
+                                    <Button
+                                      size="sm"
+                                      variant="default"
+                                      className="bg-green-500 hover:bg-green-600 text-white"
+                                      disabled={offerActionLoading === offer.id + 'COMPLETED'}
+                                      onClick={() => handleOfferStatusChange(offer.id, 'COMPLETED')}
+                                    >
+                                      {offerActionLoading === offer.id + 'COMPLETED' ? 'Confirming...' : 'Confirm Receipt'}
+                                    </Button>
+                                  ) : offer.status === 'PENDING' ? (
+                                    <>
+                                      <Button
+                                        size="sm"
+                                        variant="default"
+                                        className="bg-green-500 hover:bg-green-600 text-white"
+                                        disabled={offerActionLoading === offer.id + 'ACCEPTED' || paymentLoading === offer.id}
+                                        onClick={() => handleAcceptWithPayment(offer.id)}
+                                      >
+                                        {paymentLoading === offer.id ? (
+                                          <div className="flex items-center gap-1">
+                                            <span>Redirecting...</span>
+                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                          </div>
+                                        ) : (
+                                          'Accept & Pay'
+                                        )}
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        className="border-red-400 text-red-400 hover:bg-red-500/10"
+                                        disabled={offerActionLoading === offer.id + 'REJECTED'}
+                                        onClick={() => handleOfferStatusChange(offer.id, 'REJECTED')}
+                                      >
+                                        {offerActionLoading === offer.id + 'REJECTED' ? 'Rejecting...' : 'Reject'}
+                                      </Button>
+                                    </>
+                                  ) : null}
                                 </div>
                                 <Button
                                   size="sm"
@@ -602,7 +616,9 @@ export default function ProfilePage() {
                                 <div className="text-blue-400 font-medium">
                                   {offer.status === 'PENDING' && 'Waiting for response'}
                                   {offer.status === 'ACCEPTED' && 'Accepted'}
-                                  {offer.status === 'DELIVERED' && 'Delivered (waiting for buyer confirmation)'}
+                                  {offer.status === 'DELIVERED' && offer.request.userId === session?.user?.id 
+                                    ? 'Delivered (click Confirm Receipt to complete)'
+                                    : 'Delivered (waiting for buyer confirmation)'}
                                   {offer.status === 'COMPLETED' && 'Completed'}
                                   {offer.status === 'REJECTED' && 'Rejected'}
                                 </div>
