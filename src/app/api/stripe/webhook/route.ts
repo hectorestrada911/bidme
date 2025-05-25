@@ -22,7 +22,10 @@ export async function POST(req: Request) {
       try {
         await prisma.offer.update({
           where: { id: offerId },
-          data: { paymentStatus: 'PAID' }
+          data: {
+            paymentStatus: 'PAID',
+            status: 'ACCEPTED'
+          }
         })
         console.log('Offer marked as PAID:', offerId)
       } catch (err) {
