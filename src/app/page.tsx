@@ -11,7 +11,7 @@ import {
 import Link from "next/link"
 import { LiveRequests } from "../components/LiveRequests"
 
-import { CATEGORY_OPTIONS, CATEGORY_ICONS } from '@/lib/categories'
+import { CATEGORY_OPTIONS } from '@/lib/categories'
 
 const categories = [
   { name: "Business Services", icon: Briefcase },
@@ -56,7 +56,7 @@ export default function Home() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.8 }}
-          className="absolute inset-0 overflow-hidden pointer-events-none"
+          className="absolute inset-0 overflow-hidden pointer-events-none hidden md:block"
         >
           {/* Left side features */}
           <motion.div
