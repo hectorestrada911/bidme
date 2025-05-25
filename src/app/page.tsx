@@ -51,7 +51,7 @@ export default function Home() {
         <div className="absolute top-0 left-1/4 w-1/2 h-1/2 bg-blue-500/5 blur-[120px] pointer-events-none" />
         <div className="absolute bottom-0 right-1/4 w-1/2 h-1/2 bg-blue-600/10 blur-[120px] pointer-events-none" />
         
-        {/* Floating Features */}
+        {/* Animated Hero and Floating Notes for md+ */}
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -98,7 +98,7 @@ export default function Home() {
           </motion.div>
         </motion.div>
 
-        <div className="relative flex flex-col items-center space-y-6 text-center px-4 max-w-[800px] mx-auto">
+        <div className="relative flex flex-col items-center space-y-6 text-center px-4 max-w-[800px] mx-auto hidden md:flex">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -151,6 +151,44 @@ export default function Home() {
               </Button>
             </Link>
           </motion.div>
+        </div>
+        {/* Instant, no-animation Hero for mobile */}
+        <div className="relative flex flex-col items-center space-y-6 text-center px-4 max-w-[800px] mx-auto md:hidden">
+          <div className="space-y-3">
+            <div className="inline-flex items-center space-x-2 bg-blue-500/10 rounded-full px-3 py-1">
+              <span className="text-blue-300 text-sm font-medium tracking-wider">TRUSTED BY BUSINESSES</span>
+              <span className="flex h-1.5 w-1.5 rounded-full bg-blue-400"></span>
+            </div>
+            <h1 className="text-4xl font-bold text-white tracking-tight leading-tight">
+              Your Request,
+              <br className="hidden sm:block" />{' '}
+              <span className="bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600 text-transparent bg-clip-text inline-block">Their Best Offers</span>
+            </h1>
+          </div>
+          <p className="text-base text-gray-400 max-w-xl leading-relaxed">
+            Post your request once, receive multiple competitive offers, and choose the best deal for your business.
+          </p>
+          <div className="flex flex-col gap-4 pt-4 w-full">
+            <Link href="/post-request" passHref>
+              <Button 
+                size="lg" 
+                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:to-blue-500 text-white px-8 py-6 text-lg rounded-xl relative overflow-hidden group shadow-xl shadow-blue-500/20 hover:shadow-blue-500/30 transition-all hover:scale-[1.02]"
+              >
+                <span className="relative z-10">Post Your Request</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-700 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+              </Button>
+            </Link>
+            <Link href="/requests" passHref>
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="border-blue-400 text-blue-400 hover:bg-blue-400/10 px-8 py-6 text-lg rounded-xl group transition-colors"
+              >
+                Browse Requests
+                <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
 
