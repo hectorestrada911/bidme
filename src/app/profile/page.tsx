@@ -51,6 +51,8 @@ interface Offer {
     name: string
     image: string | null
   }
+  credentials?: string
+  deliveryDate?: string
 }
 
 export default function ProfilePage() {
@@ -85,6 +87,14 @@ export default function ProfilePage() {
   const [reviewSubmitting, setReviewSubmitting] = useState(false)
   const [userReviews, setUserReviews] = useState<any[]>([])
   const [reviewsLoading, setReviewsLoading] = useState(true)
+  const [showEditOfferModal, setShowEditOfferModal] = useState(false)
+  const [editOffer, setEditOffer] = useState<Offer | null>(null)
+  const [editAmount, setEditAmount] = useState<number | ''>('')
+  const [editMessage, setEditMessage] = useState('')
+  const [editSubmitting, setEditSubmitting] = useState(false)
+  const [editSellerName, setEditSellerName] = useState('')
+  const [editCredentials, setEditCredentials] = useState('')
+  const [editDeliveryDate, setEditDeliveryDate] = useState('')
 
   useEffect(() => {
     if (status === "loading") return
@@ -246,6 +256,66 @@ export default function ProfilePage() {
     if (!res.ok) return false
     const reviews = await res.json()
     return reviews.some((r: any) => r.offerId === offerId && r.reviewerId === session?.user?.id)
+  }
+
+  // Handler to update offer
+  async function handleEditOfferSubmit() {
+    if (!editOffer || !editAmount || !editMessage.trim()) return
+    setEditSubmitting(true)
+    try {
+      const res = await fetch(`/api/offers/${editOffer.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: editAmount,
+          message: editMessage,
+          sellerName: editSellerName,
+          credentials: editCredentials,
+          deliveryDate: editDeliveryDate
+        })
+      })
+      if (!res.ok) throw new Error('Failed to update offer')
+      setShowEditOfferModal(false)
+      setEditOffer(null)
+      setEditAmount('')
+      setEditMessage('')
+      setEditSellerName('')
+      setEditCredentials('')
+      setEditDeliveryDate('')
+      // Refresh offers
+      const offersResponse = await fetch('/api/user/offers')
+      if (offersResponse.ok) {
+        const offersData = await offersResponse.json()
+        setOffers(offersData)
+      }
+    } catch (err) {
+      alert('Error updating offer. Please try again.')
+    } finally {
+      setEditSubmitting(false)
+    }
+  }
+
+  // Handler to withdraw offer
+  async function handleWithdrawOffer(offerId: string) {
+    setOfferActionLoading(offerId + 'CANCELLED')
+    try {
+      const res = await fetch(`/api/offers/${offerId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'CANCELLED' })
+      })
+      if (!res.ok) throw new Error('Failed to withdraw offer')
+      // Refresh offers
+      const offersResponse = await fetch('/api/user/offers')
+      if (offersResponse.ok) {
+        const offersData = await offersResponse.json()
+        setOffers(offersData)
+      }
+    } catch (err) {
+      alert('Error withdrawing offer. Please try again.')
+    } finally {
+      setOfferActionLoading(null)
+    }
   }
 
   if (loading) {
@@ -537,6 +607,35 @@ export default function ProfilePage() {
                                 {offer.status === 'ACCEPTED' && 'Accepted'}
                                 {offer.status === 'REJECTED' && 'Rejected'}
                               </div>
+                              {offer.status === 'PENDING' && (
+                                <div className="flex gap-2 mt-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="border-blue-400 text-blue-400"
+                                    onClick={() => {
+                                      setEditOffer(offer)
+                                      setEditAmount(offer.amount)
+                                      setEditMessage(offer.message)
+                                      setEditSellerName(offer.user?.name || '')
+                                      setEditCredentials(offer.credentials || '')
+                                      setEditDeliveryDate(offer.deliveryDate ? offer.deliveryDate.split('T')[0] : '')
+                                      setShowEditOfferModal(true)
+                                    }}
+                                  >
+                                    Edit
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="border-red-400 text-red-400"
+                                    disabled={offerActionLoading === offer.id + 'CANCELLED'}
+                                    onClick={() => handleWithdrawOffer(offer.id)}
+                                  >
+                                    {offerActionLoading === offer.id + 'CANCELLED' ? 'Withdrawing...' : 'Withdraw'}
+                                  </Button>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -864,6 +963,62 @@ export default function ProfilePage() {
                 }}
               >
                 {reviewSubmitting ? 'Submitting...' : 'Submit Review'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showEditOfferModal && editOffer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+          <div className="bg-blue-950 p-8 rounded-xl shadow-lg w-full max-w-md">
+            <h2 className="text-xl font-bold text-white mb-4">Edit Offer</h2>
+            <div className="mb-4">
+              <label className="block text-blue-300 mb-1">Amount</label>
+              <input
+                type="number"
+                min={1}
+                className="w-full p-2 rounded bg-blue-900 text-white mb-2"
+                value={editAmount}
+                onChange={e => setEditAmount(Number(e.target.value))}
+              />
+              <label className="block text-blue-300 mb-1">Message</label>
+              <textarea
+                className="w-full p-2 rounded bg-blue-900 text-white"
+                rows={4}
+                value={editMessage}
+                onChange={e => setEditMessage(e.target.value)}
+              />
+              <label className="block text-blue-300 mb-1">Seller Name</label>
+              <input
+                type="text"
+                className="w-full p-2 rounded bg-blue-900 text-white mb-2"
+                value={editSellerName}
+                onChange={e => setEditSellerName(e.target.value)}
+              />
+              <label className="block text-blue-300 mb-1">Credentials</label>
+              <input
+                type="text"
+                className="w-full p-2 rounded bg-blue-900 text-white mb-2"
+                value={editCredentials}
+                onChange={e => setEditCredentials(e.target.value)}
+              />
+              <label className="block text-blue-300 mb-1">Delivery Date</label>
+              <input
+                type="date"
+                className="w-full p-2 rounded bg-blue-900 text-white mb-2"
+                value={editDeliveryDate}
+                onChange={e => setEditDeliveryDate(e.target.value)}
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowEditOfferModal(false)}>Cancel</Button>
+              <Button
+                variant="default"
+                disabled={editSubmitting || !editAmount || !editMessage.trim() || !editSellerName.trim() || !editCredentials.trim() || !editDeliveryDate.trim()}
+                onClick={handleEditOfferSubmit}
+              >
+                {editSubmitting ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>
           </div>
