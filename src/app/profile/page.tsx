@@ -5,7 +5,7 @@ import { redirect } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
-import { Edit, Mail, Calendar, Activity } from "lucide-react"
+import { Edit, Mail, Calendar, Activity, X } from "lucide-react"
 import Image from "next/image"
 import { useState, useEffect } from "react"
 import { loadStripe } from '@stripe/stripe-js'
@@ -26,6 +26,7 @@ interface Request {
     name: string
     image: string | null
   }
+  userId: string
 }
 
 interface Offer {
@@ -41,8 +42,10 @@ interface Offer {
     }
     description?: string
     createdAt?: string
+    userId: string
   }
   status: string
+  userId: string
   user?: {
     name: string
     image: string | null
@@ -461,30 +464,11 @@ export default function ProfilePage() {
                                 <span>{new Date(offer.createdAt).toLocaleDateString()}</span>
                               </div>
                               {/* Accept/Reject buttons or status */}
-                              {offer.status === 'PENDING' ? (
-                                <div className="flex gap-2 mt-2">
-                                  <Button
-                                    size="sm"
-                                    variant="default"
-                                    disabled={offerActionLoading === offer.id + 'ACCEPTED'}
-                                    onClick={() => handleOfferStatusChange(offer.id, 'ACCEPTED')}
-                                  >
-                                    {offerActionLoading === offer.id + 'ACCEPTED' ? 'Accepting...' : 'Accept'}
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    disabled={offerActionLoading === offer.id + 'REJECTED'}
-                                    onClick={() => handleOfferStatusChange(offer.id, 'REJECTED')}
-                                  >
-                                    {offerActionLoading === offer.id + 'REJECTED' ? 'Rejecting...' : 'Reject'}
-                                  </Button>
-                                </div>
-                              ) : (
-                                <div className={`mt-2 text-sm font-semibold ${offer.status === 'ACCEPTED' ? 'text-green-400' : 'text-red-400'}`}>
-                                  {offer.status === 'ACCEPTED' ? 'Accepted' : offer.status === 'REJECTED' ? 'Rejected' : offer.status}
-                                </div>
-                              )}
+                              <div className={`mt-2 text-sm font-semibold ${offer.status === 'ACCEPTED' ? 'text-green-400' : offer.status === 'REJECTED' ? 'text-red-400' : 'text-blue-400'}`}>
+                                {offer.status === 'PENDING' && 'Pending'}
+                                {offer.status === 'ACCEPTED' && 'Accepted'}
+                                {offer.status === 'REJECTED' && 'Rejected'}
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -510,79 +494,116 @@ export default function ProfilePage() {
           {offersReceived.length > 0 ? (
             <Card className="bg-blue-950/10 border-blue-900/50">
               <div className="p-4 space-y-4">
-                {offersReceived.map((offer) => (
-                  <motion.div
-                    key={offer.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="p-4 rounded-lg bg-blue-900/20"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="flex-shrink-0">
-                        <div className="w-12 h-12 rounded-full overflow-hidden bg-blue-950/50">
-                          {offer.user?.image && (
-                            <Image
-                              src={offer.user.image}
-                              alt={offer.user.name || 'User'}
-                              width={48}
-                              height={48}
-                              className="object-cover"
-                            />
-                          )}
-                        </div>
-                      </div>
-                      <div className="flex-grow">
-                        <div className="space-y-2">
-                          <div className="flex justify-between items-center w-full">
-                            <div>
-                              <h3 className="text-lg font-semibold text-white truncate max-w-[60%]">{offer.request.title}</h3>
-                              <div className="text-blue-400 text-xs">From: {offer.user?.name || 'Unknown'}</div>
+                {offersReceived
+                  .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                  .map((offer) => (
+                    <motion.div
+                      key={offer.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-4 rounded-lg bg-blue-900/20 border border-blue-900/30 hover:border-blue-400/20 transition-all duration-200"
+                    >
+                      <div className="flex flex-col gap-4">
+                        <div className="flex items-center gap-4">
+                          <div className="flex-shrink-0">
+                            <div className="w-12 h-12 rounded-full overflow-hidden bg-blue-950/50">
+                              {offer.user?.image && (
+                                <Image
+                                  src={offer.user.image}
+                                  alt={offer.user.name || 'User'}
+                                  width={48}
+                                  height={48}
+                                  className="object-cover"
+                                />
+                              )}
                             </div>
-                            <span className="text-green-400 font-medium whitespace-nowrap min-w-[80px] max-w-[120px] text-right">${offer.amount.toLocaleString()}</span>
                           </div>
-                          <p className="text-sm text-blue-400 line-clamp-2 break-all max-w-full">{offer.message}</p>
-                          <div className="flex items-center gap-2 text-sm text-blue-400">
-                            <Calendar className="w-4 h-4" />
-                            <span>{new Date(offer.createdAt).toLocaleDateString()}</span>
+                          <div className="flex-grow">
+                            <div className="space-y-1">
+                              <div className="flex justify-between items-center">
+                                <div className="space-y-1">
+                                  <h3 className="text-lg font-semibold text-white">{offer.request.title}</h3>
+                                  <div className="flex items-center gap-2 text-sm text-blue-400">
+                                    <span>From:</span>
+                                    <span className="font-medium">{offer.user?.name || 'Unknown'}</span>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-2xl font-bold text-green-400">${offer.amount.toLocaleString()}</span>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2 text-sm text-blue-400">
+                                <Calendar className="w-4 h-4" />
+                                <span>{new Date(offer.createdAt).toLocaleDateString()}</span>
+                              </div>
+                            </div>
                           </div>
-                          {/* Accept/Reject buttons or status */}
-                          <div className="flex gap-2 mt-2 flex-wrap">
-                            <Button
-                              size="sm"
-                              variant="default"
-                              disabled={offerActionLoading === offer.id + 'ACCEPTED' || paymentLoading === offer.id}
-                              onClick={() => handleAcceptWithPayment(offer.id)}
-                            >
-                              {paymentLoading === offer.id ? 'Redirecting...' : 'Accept & Pay'}
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              disabled={offerActionLoading === offer.id + 'REJECTED'}
-                              onClick={() => handleOfferStatusChange(offer.id, 'REJECTED')}
-                            >
-                              {offerActionLoading === offer.id + 'REJECTED' ? 'Rejecting...' : 'Reject'}
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="link"
-                              onClick={() => handleViewDetails(offer)}
-                            >
-                              View Details
-                            </Button>
+                        </div>
+                        <div className="flex flex-col gap-4">
+                          <div className="flex-grow">
+                            <div className="relative max-h-24 overflow-y-auto">
+                              <p className="text-sm text-blue-400 break-words">{offer.message}</p>
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-end gap-2">
+                            {offer.request.userId === session?.user?.id ? (
+                              <>
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="default"
+                                    className="bg-green-500 hover:bg-green-600 text-white"
+                                    disabled={offerActionLoading === offer.id + 'ACCEPTED' || paymentLoading === offer.id}
+                                    onClick={() => handleAcceptWithPayment(offer.id)}
+                                  >
+                                    {paymentLoading === offer.id ? (
+                                      <div className="flex items-center gap-1">
+                                        <span>Redirecting...</span>
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                      </div>
+                                    ) : (
+                                      'Accept & Pay'
+                                    )}
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="border-red-400 text-red-400 hover:bg-red-500/10"
+                                    disabled={offerActionLoading === offer.id + 'REJECTED'}
+                                    onClick={() => handleOfferStatusChange(offer.id, 'REJECTED')}
+                                  >
+                                    {offerActionLoading === offer.id + 'REJECTED' ? 'Rejecting...' : 'Reject'}
+                                  </Button>
+                                </div>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="text-blue-400 hover:text-white"
+                                  onClick={() => handleViewDetails(offer)}
+                                >
+                                  View Details
+                                </Button>
+                              </>
+                            ) : offer.userId === session?.user?.id ? (
+                              <div className="text-blue-400 font-medium">
+                                {offer.status === 'PENDING' && 'Waiting for response'}
+                                {offer.status === 'ACCEPTED' && 'Accepted'}
+                                {offer.status === 'REJECTED' && 'Rejected'}
+                              </div>
+                            ) : null}
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </motion.div>
-                ))}
+                    </motion.div>
+                  ))}
               </div>
             </Card>
           ) : (
             <Card className="p-4 bg-blue-950/10 border-blue-900/50">
               <div className="text-center py-8 text-blue-400">
                 <Activity className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>No offers received yet</p>
+                <p className="text-lg">No offers received yet</p>
+                <p className="text-sm">Create a request to start receiving offers!</p>
               </div>
             </Card>
           )}
@@ -590,60 +611,104 @@ export default function ProfilePage() {
       </div>
 
       {showOfferModal && selectedOffer && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
-          <div className="bg-blue-950 rounded-xl shadow-2xl p-8 max-w-lg w-full relative border border-blue-900">
-            <button
-              className="absolute top-3 right-3 text-blue-300 hover:text-white text-2xl font-bold"
-              onClick={handleCloseModal}
-              aria-label="Close"
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.95 }}
+          className="fixed inset-0 z-50 overflow-y-auto"
+        >
+          <div className="min-h-screen flex items-center justify-center bg-black bg-opacity-60">
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              className="bg-gradient-to-br from-blue-900/80 via-blue-950/80 to-blue-900/80 backdrop-blur-sm rounded-2xl shadow-2xl max-w-lg w-full relative border border-blue-900/50 overflow-hidden"
             >
-              ×
-            </button>
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-16 h-16 rounded-full overflow-hidden bg-blue-950/50 border-2 border-blue-900">
-                {selectedOffer.user?.image ? (
-                  <Image
-                    src={selectedOffer.user.image}
-                    alt={selectedOffer.user.name || 'User'}
-                    width={64}
-                    height={64}
-                    className="object-cover"
-                  />
-                ) : (
-                  <div className="w-16 h-16 flex items-center justify-center bg-blue-900 text-white text-2xl font-bold rounded-full">
-                    {selectedOffer.user?.name?.[0] || '?'}
+              <button
+                className="absolute top-4 right-4 text-white hover:text-blue-400 text-2xl font-bold transition-colors duration-200"
+                onClick={handleCloseModal}
+                aria-label="Close"
+              >
+                <X className="h-6 w-6" />
+              </button>
+              
+              <div className="p-8">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-blue-800/50 via-blue-900/50 to-blue-900/50 border-2 border-blue-900/50">
+                    {selectedOffer.user?.image ? (
+                      <Image
+                        src={selectedOffer.user.image}
+                        alt={selectedOffer.user.name || 'User'}
+                        width={64}
+                        height={64}
+                        className="object-cover"
+                      />
+                    ) : (
+                      <div className="w-16 h-16 flex items-center justify-center bg-gradient-to-br from-blue-900 to-blue-900 text-white text-2xl font-bold rounded-full">
+                        <div className="text-2xl font-bold">{selectedOffer.user?.name?.[0] || '?'}</div>
+                      </div>
+                    )}
                   </div>
-                )}
+                  <div>
+                    <div className="text-2xl font-bold text-white leading-tight">{selectedOffer.user?.name || 'Unknown'}</div>
+                    <div className="text-blue-400 text-sm font-medium">Offeror</div>
+                  </div>
+                </div>
+
+                <div className="space-y-8">
+                  <div className="p-4 bg-gradient-to-br from-blue-900/50 via-blue-950/50 to-blue-900/50 rounded-xl">
+                    <div className="uppercase text-xs text-blue-400 font-semibold mb-2 tracking-wider">Request</div>
+                    <div className="text-lg font-semibold text-white mb-2">{selectedOffer.request.title}</div>
+                    <div className="text-blue-400 text-sm whitespace-pre-line max-h-48 overflow-y-auto pr-2">{selectedOffer.request.description}</div>
+                  </div>
+
+                  <div className="p-4 bg-gradient-to-br from-blue-900/50 via-blue-950/50 to-blue-900/50 rounded-xl">
+                    <div className="uppercase text-xs text-blue-400 font-semibold mb-2 tracking-wider">Offer Message</div>
+                    <div className="text-white whitespace-pre-line max-h-64 overflow-y-auto pr-2">{selectedOffer.message}</div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="p-4 bg-gradient-to-br from-blue-900/50 via-blue-950/50 to-blue-900/50 rounded-xl">
+                      <div className="uppercase text-xs text-blue-400 font-semibold mb-2 tracking-wider">Amount</div>
+                      <div className="text-blue-400 font-bold text-2xl">${selectedOffer.amount.toLocaleString()}</div>
+                    </div>
+                    <div className="p-4 bg-gradient-to-br from-blue-900/50 via-blue-950/50 to-blue-900/50 rounded-xl">
+                      <div className="uppercase text-xs text-blue-400 font-semibold mb-2 tracking-wider">Date</div>
+                      <div className="text-blue-400 text-base">{new Date(selectedOffer.createdAt).toLocaleDateString()}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-8 flex justify-end gap-4">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-blue-400 text-blue-400 hover:bg-blue-500/10 transition-all duration-200"
+                    disabled={offerActionLoading === selectedOffer.id + 'REJECTED'}
+                    onClick={() => handleOfferStatusChange(selectedOffer.id, 'REJECTED')}
+                  >
+                    {offerActionLoading === selectedOffer.id + 'REJECTED' ? 'Rejecting...' : 'Reject'}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="default"
+                    className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white transition-all duration-200"
+                    disabled={paymentLoading === selectedOffer.id}
+                    onClick={() => handleAcceptWithPayment(selectedOffer.id)}
+                  >
+                    {paymentLoading === selectedOffer.id ? (
+                      <div className="flex items-center gap-1">
+                        <span>Redirecting...</span>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      </div>
+                    ) : (
+                      'Accept & Pay'
+                    )}
+                  </Button>
+                </div>
               </div>
-              <div>
-                <div className="text-2xl font-bold text-white leading-tight">{selectedOffer.user?.name || 'Unknown'}</div>
-                <div className="text-blue-400 text-sm font-medium">Offeror</div>
-              </div>
-            </div>
-            <div className="mb-4">
-              <div className="uppercase text-xs text-blue-400 font-semibold mb-1 tracking-wider">Request</div>
-              <div className="text-lg font-semibold text-white mb-1">{selectedOffer.request.title}</div>
-              <div className="text-blue-300 text-sm mb-2 whitespace-pre-line">{selectedOffer.request.description}</div>
-            </div>
-            <div className="border-t border-blue-900 my-4"></div>
-            <div className="mb-4">
-              <div className="uppercase text-xs text-blue-400 font-semibold mb-1 tracking-wider">Offer Message</div>
-              <div className="text-white whitespace-pre-line break-words text-base">{selectedOffer.message}</div>
-            </div>
-            <div className="border-t border-blue-900 my-4"></div>
-            <div className="flex gap-8 mb-2">
-              <div>
-                <div className="uppercase text-xs text-blue-400 font-semibold mb-1 tracking-wider">Amount</div>
-                <div className="text-green-400 font-bold text-xl">${selectedOffer.amount.toLocaleString()}</div>
-              </div>
-              <div>
-                <div className="uppercase text-xs text-blue-400 font-semibold mb-1 tracking-wider">Date</div>
-                <div className="text-white text-base">{new Date(selectedOffer.createdAt).toLocaleDateString()}</div>
-              </div>
-            </div>
-            {/* Add more details as needed, e.g., credentials, deliveryDate, etc. */}
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
       )}
     </div>
   )

@@ -20,8 +20,15 @@ export async function GET() {
         title: true,
         description: true,
         createdAt: true,
+        userId: true,
         offers: {
-          include: {
+          select: {
+            id: true,
+            amount: true,
+            message: true,
+            createdAt: true,
+            status: true,
+            userId: true,
             user: {
               select: {
                 name: true,
@@ -34,13 +41,14 @@ export async function GET() {
     })
     // Flatten offers with request info
     const offersReceived = requests.flatMap(request =>
-      request.offers.map(offer => ({
+      request.offers.map((offer: any) => ({
         ...offer,
         request: {
           id: request.id,
           title: request.title,
           description: request.description,
-          createdAt: request.createdAt
+          createdAt: request.createdAt,
+          userId: request.userId
         }
       }))
     )
