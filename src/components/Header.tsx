@@ -8,11 +8,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { User, LogOut } from "lucide-react"
+import { User, LogOut, Menu } from "lucide-react"
 import Image from "next/image"
+import React from "react"
 
 export default function Header() {
   const { data: session, status } = useSession()
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false)
   return (
     <header className="w-full bg-[#0a0d12]/80 backdrop-blur-sm border-b border-blue-900/50 fixed top-0 z-50">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
@@ -21,7 +23,8 @@ export default function Header() {
           <span className="text-blue-400 text-sm font-normal">beta</span>
         </Link>
         
-        <div className="flex items-center gap-4">
+        {/* Desktop Nav */}
+        <div className="hidden md:flex items-center gap-4">
           <Link href="/suppliers">
             <Button 
               variant="outline"
@@ -86,6 +89,51 @@ export default function Header() {
               </Button>
             </Link>
           )}
+        </div>
+        {/* Mobile Nav */}
+        <div className="md:hidden flex items-center">
+          <DropdownMenu open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-9 w-9 p-0">
+                <Menu className="h-6 w-6 text-blue-400" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48 bg-[#0a0d12] border-blue-900/50">
+              <Link href="/suppliers" onClick={() => setMobileMenuOpen(false)}>
+                <DropdownMenuItem className="cursor-pointer hover:bg-blue-950/50 focus:bg-blue-950/50">
+                  Browse Requests
+                </DropdownMenuItem>
+              </Link>
+              <Link href="/post-request" onClick={() => setMobileMenuOpen(false)}>
+                <DropdownMenuItem className="cursor-pointer hover:bg-blue-950/50 focus:bg-blue-950/50">
+                  Post Request
+                </DropdownMenuItem>
+              </Link>
+              {status === "loading" ? null : session ? (
+                <>
+                  <Link href="/profile" onClick={() => setMobileMenuOpen(false)}>
+                    <DropdownMenuItem className="cursor-pointer hover:bg-blue-950/50 focus:bg-blue-950/50">
+                      <User className="mr-2 h-4 w-4 text-blue-400" />
+                      <span>Profile</span>
+                    </DropdownMenuItem>
+                  </Link>
+                  <DropdownMenuItem 
+                    className="cursor-pointer hover:bg-blue-950/50 focus:bg-blue-950/50"
+                    onClick={() => { setMobileMenuOpen(false); signOut(); }}
+                  >
+                    <LogOut className="mr-2 h-4 w-4 text-blue-400" />
+                    <span>Logout</span>
+                  </DropdownMenuItem>
+                </>
+              ) : (
+                <Link href="/auth/signin" onClick={() => setMobileMenuOpen(false)}>
+                  <DropdownMenuItem className="cursor-pointer hover:bg-blue-950/50 focus:bg-blue-950/50">
+                    Login
+                  </DropdownMenuItem>
+                </Link>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </header>
