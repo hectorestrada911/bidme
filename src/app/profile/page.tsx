@@ -5,7 +5,7 @@ import { redirect } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
-import { Edit, Mail, Calendar, Activity, X } from "lucide-react"
+import { Edit, Mail, Calendar, Activity, X, Star } from "lucide-react"
 import Image from "next/image"
 import { useState, useEffect } from "react"
 import { loadStripe } from '@stripe/stripe-js'
@@ -78,6 +78,13 @@ export default function ProfilePage() {
   const [selectedOffer, setSelectedOffer] = useState<Offer | null>(null)
   const [showOfferModal, setShowOfferModal] = useState(false)
   const [paymentLoading, setPaymentLoading] = useState<string | null>(null)
+  const [showReviewModal, setShowReviewModal] = useState(false)
+  const [reviewOffer, setReviewOffer] = useState<Offer | null>(null)
+  const [reviewRating, setReviewRating] = useState(5)
+  const [reviewComment, setReviewComment] = useState('')
+  const [reviewSubmitting, setReviewSubmitting] = useState(false)
+  const [userReviews, setUserReviews] = useState<any[]>([])
+  const [reviewsLoading, setReviewsLoading] = useState(true)
 
   useEffect(() => {
     if (status === "loading") return
@@ -146,6 +153,19 @@ export default function ProfilePage() {
 
     fetchStats()
   }, [status])
+
+  useEffect(() => {
+    if (!session?.user?.id) return
+    setReviewsLoading(true)
+    fetch(`/api/reviews?userId=${session.user.id}`)
+      .then(res => res.ok ? res.json() : [])
+      .then(data => setUserReviews(data))
+      .finally(() => setReviewsLoading(false))
+  }, [session?.user?.id])
+
+  const averageRating = userReviews.length
+    ? (userReviews.reduce((sum, r) => sum + r.rating, 0) / userReviews.length).toFixed(1)
+    : null
 
   // Handler for accepting/rejecting offers
   async function handleOfferStatusChange(offerId: string, newStatus: 'ACCEPTED' | 'REJECTED' | 'DELIVERED' | 'COMPLETED') {
@@ -220,6 +240,14 @@ export default function ProfilePage() {
     }
   }
 
+  // Helper to check if user has reviewed an offer
+  async function hasLeftReview(offerId: string): Promise<boolean> {
+    const res = await fetch(`/api/reviews?userId=${session?.user?.id}`)
+    if (!res.ok) return false
+    const reviews = await res.json()
+    return reviews.some((r: any) => r.offerId === offerId && r.reviewerId === session?.user?.id)
+  }
+
   if (loading) {
     return (
       <div className="container max-w-6xl py-8 space-y-8 pt-24">
@@ -281,6 +309,45 @@ export default function ProfilePage() {
                 <Calendar className="w-4 h-4" />
                 <span className="text-sm">Joined May 2024</span>
               </div>
+              {reviewsLoading ? (
+                <div className="text-blue-400 text-sm mt-2">Loading reviews...</div>
+              ) : (
+                <div className="mt-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-yellow-400 font-bold text-lg">{averageRating || '—'}</span>
+                    <div className="flex items-center">
+                      {[1,2,3,4,5].map(star => (
+                        <Star key={star} className={`w-4 h-4 ${averageRating && parseFloat(averageRating) >= star ? 'text-yellow-400' : 'text-blue-400'}`} fill={averageRating && parseFloat(averageRating) >= star ? 'currentColor' : 'none'} />
+                      ))}
+                    </div>
+                    <span className="text-blue-400 text-sm ml-2">({userReviews.length} review{userReviews.length === 1 ? '' : 's'})</span>
+                  </div>
+                  {userReviews.length > 0 && (
+                    <div className="mt-2 space-y-2 max-h-40 overflow-y-auto">
+                      {userReviews.slice(0, 5).map((review, idx) => (
+                        <div key={review.id} className="bg-blue-900/30 rounded p-2">
+                          <div className="flex items-center gap-2 mb-1">
+                            <div className="w-6 h-6 rounded-full overflow-hidden bg-blue-950/50">
+                              {review.reviewer?.image ? (
+                                <Image src={review.reviewer.image} alt={review.reviewer.name || 'User'} width={24} height={24} className="object-cover" />
+                              ) : (
+                                <span className="text-blue-400 font-bold text-xs flex items-center justify-center w-full h-full">{review.reviewer?.name?.[0] || '?'}</span>
+                              )}
+                            </div>
+                            <span className="text-blue-200 text-xs font-semibold">{review.reviewer?.name || 'User'}</span>
+                            <div className="flex items-center ml-2">
+                              {[1,2,3,4,5].map(star => (
+                                <Star key={star} className={`w-3 h-3 ${review.rating >= star ? 'text-yellow-400' : 'text-blue-400'}`} fill={review.rating >= star ? 'currentColor' : 'none'} />
+                              ))}
+                            </div>
+                          </div>
+                          <div className="text-blue-300 text-xs">{review.comment}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </Card>
@@ -742,6 +809,65 @@ export default function ProfilePage() {
             </motion.div>
           </div>
         </motion.div>
+      )}
+
+      {showReviewModal && reviewOffer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+          <div className="bg-blue-950 p-8 rounded-xl shadow-lg w-full max-w-md">
+            <h2 className="text-xl font-bold text-white mb-4">Leave a Review</h2>
+            <div className="flex items-center mb-4">
+              {[1,2,3,4,5].map((star) => (
+                <Star
+                  key={star}
+                  className={`w-6 h-6 cursor-pointer ${reviewRating >= star ? 'text-yellow-400' : 'text-blue-400'}`}
+                  onClick={() => setReviewRating(star)}
+                  fill={reviewRating >= star ? 'currentColor' : 'none'}
+                />
+              ))}
+            </div>
+            <textarea
+              className="w-full p-2 rounded bg-blue-900 text-white mb-4"
+              rows={4}
+              placeholder="Write your review..."
+              value={reviewComment}
+              onChange={e => setReviewComment(e.target.value)}
+            />
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowReviewModal(false)}>Cancel</Button>
+              <Button
+                variant="default"
+                disabled={reviewSubmitting || !reviewComment.trim()}
+                onClick={async () => {
+                  setReviewSubmitting(true)
+                  try {
+                    const res = await fetch('/api/reviews', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        offerId: reviewOffer.id,
+                        revieweeId: reviewOffer.userId === session?.user?.id ? reviewOffer.request.userId : reviewOffer.userId,
+                        rating: reviewRating,
+                        comment: reviewComment.trim()
+                      })
+                    })
+                    if (!res.ok) throw new Error('Failed to submit review')
+                    setShowReviewModal(false)
+                    setReviewOffer(null)
+                    setReviewComment('')
+                    setReviewRating(5)
+                    alert('Review submitted!')
+                  } catch (err) {
+                    alert('Error submitting review. Please try again.')
+                  } finally {
+                    setReviewSubmitting(false)
+                  }
+                }}
+              >
+                {reviewSubmitting ? 'Submitting...' : 'Submit Review'}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
