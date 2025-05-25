@@ -29,6 +29,7 @@ export async function GET() {
             createdAt: true,
             status: true,
             userId: true,
+            paymentStatus: true,
             user: {
               select: {
                 name: true,

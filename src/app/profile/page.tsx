@@ -46,6 +46,7 @@ interface Offer {
   }
   status: string
   userId: string
+  paymentStatus?: string
   user?: {
     name: string
     image: string | null
@@ -147,7 +148,7 @@ export default function ProfilePage() {
   }, [status])
 
   // Handler for accepting/rejecting offers
-  async function handleOfferStatusChange(offerId: string, newStatus: 'ACCEPTED' | 'REJECTED') {
+  async function handleOfferStatusChange(offerId: string, newStatus: 'ACCEPTED' | 'REJECTED' | 'DELIVERED') {
     setOfferActionLoading(offerId + newStatus)
     try {
       const res = await fetch(`/api/offers/${offerId}/status`, {
@@ -585,11 +586,27 @@ export default function ProfilePage() {
                                 </Button>
                               </>
                             ) : offer.userId === session?.user?.id ? (
-                              <div className="text-blue-400 font-medium">
-                                {offer.status === 'PENDING' && 'Waiting for response'}
-                                {offer.status === 'ACCEPTED' && 'Accepted'}
-                                {offer.status === 'REJECTED' && 'Rejected'}
-                              </div>
+                              <>
+                                {/* Mark as Delivered button for seller */}
+                                {offer.paymentStatus === 'PAID' && offer.status !== 'DELIVERED' && offer.status !== 'COMPLETED' && (
+                                  <Button
+                                    size="sm"
+                                    variant="default"
+                                    className="bg-blue-500 hover:bg-blue-600 text-white mb-2"
+                                    disabled={offerActionLoading === offer.id + 'DELIVERED'}
+                                    onClick={() => handleOfferStatusChange(offer.id, 'DELIVERED')}
+                                  >
+                                    {offerActionLoading === offer.id + 'DELIVERED' ? 'Marking...' : 'Mark as Delivered'}
+                                  </Button>
+                                )}
+                                <div className="text-blue-400 font-medium">
+                                  {offer.status === 'PENDING' && 'Waiting for response'}
+                                  {offer.status === 'ACCEPTED' && 'Accepted'}
+                                  {offer.status === 'DELIVERED' && 'Delivered (waiting for buyer confirmation)'}
+                                  {offer.status === 'COMPLETED' && 'Completed'}
+                                  {offer.status === 'REJECTED' && 'Rejected'}
+                                </div>
+                              </>
                             ) : null}
                           </div>
                         </div>
