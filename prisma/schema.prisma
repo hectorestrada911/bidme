@@ -23,6 +23,7 @@ enum OfferStatus {
   ACCEPTED
   REJECTED
   CANCELLED
+  DELIVERED
   COMPLETED
 }
 
@@ -72,6 +73,7 @@ model Offer {
   request       Request  @relation("RequestOffers", fields: [requestId], references: [id])
   user          User?    @relation(fields: [userId], references: [id])
   statusHistory OfferStatusHistory[]
+  reviews       Review[]
 }
 
 model OfferStatusHistory {
@@ -97,6 +99,8 @@ model User {
   offers        Offer[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @default(now()) // For migration
+  reviewsGiven     Review[] @relation("Reviewer")
+  reviewsReceived  Review[] @relation("Reviewee")
 }
 
 model Account {
@@ -131,4 +135,19 @@ model VerificationToken {
   expires   DateTime
 
   @@unique([identifier, token])
+}
+
+model Review {
+  id          String   @id @default(uuid())
+  offer       Offer    @relation(fields: [offerId], references: [id])
+  offerId     String
+  reviewer    User     @relation("Reviewer", fields: [reviewerId], references: [id])
+  reviewerId  String
+  reviewee    User     @relation("Reviewee", fields: [revieweeId], references: [id])
+  revieweeId  String
+  rating      Int
+  comment     String
+  createdAt   DateTime @default(now())
+
+  @@unique([offerId, reviewerId])
 }

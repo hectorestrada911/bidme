@@ -15,10 +15,10 @@ export default function OffersSection({ requestId }: { requestId: string }) {
 
   useEffect(() => {
     if (status === 'loading') return;
-    if (!session?.user?.id) {
-      toast.error('Please sign in to view offers')
-      router.push('/auth/signin')
-    }
+      if (!session?.user?.id) {
+        toast.error('Please sign in to view offers')
+        router.push('/auth/signin')
+      }
   }, [session, status, router]);
 
   const fetchOffers = async () => {

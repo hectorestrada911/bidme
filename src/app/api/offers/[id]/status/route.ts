@@ -13,7 +13,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     }
 
     const body = await request.json() as {
-      status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED' | 'COMPLETED'
+      status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED' | 'DELIVERED' | 'COMPLETED'
       reason?: string
     }
 
@@ -39,7 +39,8 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     // Validate status transition
     const validTransitions = {
       PENDING: ['ACCEPTED', 'REJECTED', 'CANCELLED'],
-      ACCEPTED: ['COMPLETED', 'CANCELLED'],
+      ACCEPTED: ['DELIVERED', 'COMPLETED', 'CANCELLED'],
+      DELIVERED: ['COMPLETED', 'CANCELLED'],
       REJECTED: [],
       CANCELLED: [],
       COMPLETED: []
@@ -49,6 +50,16 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       return NextResponse.json({
         error: `Cannot transition from ${offer.status} to ${body.status}`
       }, { status: 400 })
+    }
+
+    // Only allow offer creator to mark as DELIVERED, and only if paymentStatus is PAID
+    if (body.status === 'DELIVERED') {
+      if (offer.userId !== session.user.id) {
+        return NextResponse.json({ error: 'Only the seller can mark as delivered' }, { status: 403 })
+      }
+      if (offer.paymentStatus !== 'PAID') {
+        return NextResponse.json({ error: 'Order must be paid before marking as delivered' }, { status: 400 })
+      }
     }
 
     // Update offer status and create history record

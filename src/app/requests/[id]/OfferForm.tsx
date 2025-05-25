@@ -40,9 +40,9 @@ export default function OfferForm({ requestId, onOfferSubmitted = () => {} }: { 
 
   useEffect(() => {
     if (status === 'loading') return;
-    if (!session?.user?.id) {
-      setErrors(prev => ({ ...prev, submit: 'Please log in to submit an offer' }))
-    }
+      if (!session?.user?.id) {
+        setErrors(prev => ({ ...prev, submit: 'Please log in to submit an offer' }))
+      }
   }, [session, status]);
 
   const validateForm = (): boolean => {
