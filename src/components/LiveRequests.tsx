@@ -30,6 +30,9 @@ export function LiveRequests() {
   const [requests, setRequests] = useState<RequestWithUser[]>([])
   const [loading, setLoading] = useState(true)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const [showSwipeHint, setShowSwipeHint] = useState(true)
+  const [currentPage, setCurrentPage] = useState(0)
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 640
 
   const scrollTo = (direction: 'left' | 'right') => {
     if (!scrollContainerRef.current) return
@@ -65,6 +68,32 @@ export function LiveRequests() {
     fetchRequests()
   }, [])
 
+  // Hide swipe hint after scroll or 3s
+  useEffect(() => {
+    if (!isMobile) return
+    const timeout = setTimeout(() => setShowSwipeHint(false), 3000)
+    const handler = () => setShowSwipeHint(false)
+    const container = scrollContainerRef.current
+    if (container) container.addEventListener('scroll', handler)
+    return () => {
+      clearTimeout(timeout)
+      if (container) container.removeEventListener('scroll', handler)
+    }
+  }, [isMobile])
+
+  // Paging dots logic
+  useEffect(() => {
+    const container = scrollContainerRef.current
+    if (!container) return
+    const onScroll = () => {
+      const cardWidth = container.firstElementChild?.clientWidth || 1
+      const page = Math.round(container.scrollLeft / cardWidth)
+      setCurrentPage(page)
+    }
+    container.addEventListener('scroll', onScroll)
+    return () => container.removeEventListener('scroll', onScroll)
+  }, [loading])
+
   if (loading) {
     return (
       <div className="w-full py-12 space-y-6">
@@ -97,32 +126,40 @@ export function LiveRequests() {
 
   return (
     <div className="w-full space-y-6">
-      {/* Two-row horizontal scroll layout */}
       <div className="relative group">
         {/* Gradient fades */}
-        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#0a0d12] to-transparent z-10" />
-        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#0a0d12] to-transparent z-10" />
+        <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-[#0a0d12] to-transparent z-10 pointer-events-none" />
+        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-[#0a0d12] to-transparent z-10 pointer-events-none sm:block block" />
 
-        {/* Scroll buttons */}
+        {/* Scroll buttons - always visible and larger on mobile */}
         <button 
           onClick={() => scrollTo('left')}
-          className="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-blue-950/90 border border-blue-800/50 text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-blue-900/90 hover:text-blue-300 disabled:opacity-0"
+          className="absolute left-2 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-blue-950/90 border border-blue-800/50 text-blue-400 transition-opacity duration-200 hover:bg-blue-900/90 hover:text-blue-300 disabled:opacity-0 sm:opacity-0 sm:group-hover:opacity-100"
+          style={{ fontSize: isMobile ? 28 : 20, opacity: 1 }}
           disabled={loading}
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="w-6 h-6" />
         </button>
         <button 
           onClick={() => scrollTo('right')}
-          className="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-2 rounded-full bg-blue-950/90 border border-blue-800/50 text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-blue-900/90 hover:text-blue-300 disabled:opacity-0"
+          className="absolute right-2 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-blue-950/90 border border-blue-800/50 text-blue-400 transition-opacity duration-200 hover:bg-blue-900/90 hover:text-blue-300 disabled:opacity-0 sm:opacity-0 sm:group-hover:opacity-100"
+          style={{ fontSize: isMobile ? 28 : 20, opacity: 1 }}
           disabled={loading}
         >
-          <ArrowRight className="w-5 h-5" />
+          <ArrowRight className="w-6 h-6" />
         </button>
 
-        {/* Scrolling container */}
+        {/* Swipe hint (mobile only) */}
+        {showSwipeHint && isMobile && (
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-blue-950/80 px-3 py-1 rounded-full text-blue-200 text-xs shadow-lg animate-bounce">
+            Swipe to see more <ArrowRight className="w-4 h-4" />
+          </div>
+        )}
+
+        {/* Scrolling container with snap */}
         <div 
           ref={scrollContainerRef}
-          className="grid grid-rows-2 auto-cols-[300px] sm:auto-cols-[350px] grid-flow-col gap-6 overflow-x-auto pb-4 px-4 scrollbar-thin scrollbar-track-blue-950/20 scrollbar-thumb-blue-900/50 hover:scrollbar-thumb-blue-800/50 scroll-smooth"
+          className="grid grid-rows-2 auto-cols-[300px] sm:auto-cols-[350px] grid-flow-col gap-6 overflow-x-auto pb-4 px-4 scrollbar-thin scrollbar-track-blue-950/20 scrollbar-thumb-blue-900/50 hover:scrollbar-thumb-blue-800/50 scroll-smooth snap-x snap-mandatory"
         >
           {requests.map((req) => {
             const isNew = (Date.now() - new Date(req.createdAt).getTime()) < 1000 * 60 * 60 * 48;
@@ -212,9 +249,16 @@ export function LiveRequests() {
             </Link>
           </motion.div>
         </div>
+
+        {/* Paging dots (mobile only) */}
+        {isMobile && requests.length > 1 && (
+          <div className="flex justify-center mt-2 gap-1">
+            {Array.from({ length: requests.length }).map((_, i) => (
+              <span key={i} className={`w-2 h-2 rounded-full ${i === currentPage ? 'bg-blue-400' : 'bg-blue-900'}`}></span>
+            ))}
+          </div>
+        )}
       </div>
-
-
     </div>
   )
 }
