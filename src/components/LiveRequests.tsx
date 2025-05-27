@@ -124,71 +124,75 @@ export function LiveRequests() {
           ref={scrollContainerRef}
           className="grid grid-rows-2 auto-cols-[300px] sm:auto-cols-[350px] grid-flow-col gap-6 overflow-x-auto pb-4 px-4 scrollbar-thin scrollbar-track-blue-950/20 scrollbar-thumb-blue-900/50 hover:scrollbar-thumb-blue-800/50 scroll-smooth"
         >
-          {requests.map((req) => (
-            <motion.div
-              key={req.id}
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-              className="snap-start"
-            >
-              <Link href={`/requests/${req.id}`} className="block h-full group">
-                <Card className="h-full rounded-xl border-blue-900/50 bg-blue-950/10 p-6 flex flex-col gap-4 shadow-lg hover:shadow-xl hover:bg-blue-950/30 transition-all duration-300 hover:scale-[1.02] hover:border-blue-800/50">
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <CardTitle className="text-lg font-semibold truncate">{req.title}</CardTitle>
-                      <Badge
-                        variant="outline"
-                        className={`capitalize ${getStatusColor(req.status)}`}
-                      >
-                        {req.status.toLowerCase()}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm text-muted-foreground truncate">
-                          {req.description}
-                        </p>
-                        <Badge variant="outline">{req.category}</Badge>
+          {requests.map((req) => {
+            const isNew = (Date.now() - new Date(req.createdAt).getTime()) < 1000 * 60 * 60 * 48;
+            return (
+              <motion.div
+                key={req.id}
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+                className="snap-start"
+              >
+                <Link href={`/requests/${req.id}`} className="block h-full group">
+                  <Card className="h-full rounded-xl border-blue-900/50 bg-blue-950/10 p-6 flex flex-col gap-4 shadow-lg hover:shadow-xl hover:bg-blue-950/30 transition-all duration-300 hover:scale-[1.02] hover:border-blue-800/50">
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <CardTitle className="text-lg font-semibold truncate flex items-center gap-2">
+                          {req.title}
+                          {isNew && <Badge className="bg-green-600 text-white ml-2">New</Badge>}
+                        </CardTitle>
+                        <Badge
+                          variant="outline"
+                          className={`capitalize ${getStatusColor(req.status)}`}
+                        >
+                          {req.status.toLowerCase()}
+                        </Badge>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm text-muted-foreground">
-                          {req.quantity} items needed
-                        </p>
-                        <p className="text-sm font-medium">
-                          ${req.budget.toLocaleString()}
-                        </p>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm text-muted-foreground">
-                          Preferred Deadline: {new Date(req.deadline).toLocaleDateString()}
-                        </p>
-                        <p className="text-sm font-medium">
-                          {req._count.offers} offers
-                        </p>
-                      </div>
-                      {req.statusHistory && req.statusHistory.length > 0 && (
-                        <div className="mt-2">
-                          <p className="text-xs text-muted-foreground">
-                            Last updated: {new Date(req.statusHistory[0].timestamp).toLocaleDateString()}
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm text-muted-foreground truncate">
+                            {req.description}
+                          </p>
+                          <Badge variant="outline">{req.category}</Badge>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm text-muted-foreground">
+                            {req.quantity} items needed
+                          </p>
+                          <p className="text-sm font-medium">
+                            ${req.budget.toLocaleString()}
                           </p>
                         </div>
-                      )}
-                    </div>
-                  </CardContent>
-                  <Button 
-                    variant="outline" 
-                    className="w-full border-blue-400 text-blue-400 hover:bg-blue-400/10 mt-4 group-hover:border-blue-300 group-hover:text-blue-300 transition-colors"
-                  >
-                    Make an Offer
-                  </Button>
-                </Card>
-              </Link>
-            </motion.div>
-          ))}
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm text-muted-foreground">
+                            Preferred Deadline: {new Date(req.deadline).toLocaleDateString()}
+                          </p>
+                          <p className="text-sm font-medium">
+                            {req._count.offers} offers
+                          </p>
+                        </div>
+                        <div className="mt-2">
+                          <p className="text-xs text-muted-foreground">
+                            Posted: {new Date(req.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                    <Button 
+                      variant="outline" 
+                      className="w-full border-blue-400 text-blue-400 hover:bg-blue-400/10 mt-4 group-hover:border-blue-300 group-hover:text-blue-300 transition-colors"
+                    >
+                      Make an Offer
+                    </Button>
+                  </Card>
+                </Link>
+              </motion.div>
+            )
+          })}
 
           {/* Add Request Card */}
           <motion.div
