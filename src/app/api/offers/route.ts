@@ -61,6 +61,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Request not found' }, { status: 404 })
     }
 
+    // Prevent users from making offers on their own requests
+    if (foundRequest.userId === session.user.id) {
+      return NextResponse.json({ error: 'You cannot make an offer on your own request' }, { status: 400 })
+    }
+
     if (foundRequest.status !== 'OPEN') {
       return NextResponse.json(
         { error: 'This request is no longer accepting offers' },
@@ -88,10 +93,10 @@ export async function POST(request: Request) {
       }
     }) as unknown as OfferWithUser
 
-    // Send email notification to request owner
+    // Send email notification to request owner (only if not self)
     try {
       const requestOwner = await prisma.user.findUnique({ where: { id: foundRequest.userId } })
-      if (requestOwner?.email) {
+      if (requestOwner?.email && requestOwner.id !== session.user.id) {
         await sendNewOfferEmail({
           to: requestOwner.email,
           userName: requestOwner.name || 'there',
