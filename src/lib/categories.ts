@@ -1,10 +1,10 @@
 export const CATEGORY_OPTIONS = [
-  { value: "business-services", label: "Business Services", icon: "Briefcase" },
   { value: "products", label: "Products", icon: "ShoppingBag" },
-  { value: "home-services", label: "Home Services", icon: "Home" },
-  { value: "professional-work", label: "Professional Work", icon: "Wrench" },
-  { value: "creative-services", label: "Creative Services", icon: "Camera" },
-  { value: "technology", label: "Technology", icon: "Laptop" }
+  { value: "electronics", label: "Electronics", icon: "Cpu" },
+  { value: "clothing", label: "Clothing", icon: "Shirt" },
+  { value: "accessories", label: "Accessories", icon: "Gem" },
+  { value: "wholesale", label: "Wholesale", icon: "Package" },
+  { value: "jewelry", label: "Jewelry", icon: "Diamond" }
 ]
 
 export type CategoryOption = typeof CATEGORY_OPTIONS[number]

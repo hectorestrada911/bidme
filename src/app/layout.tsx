@@ -5,7 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { Footer } from "@/components/Footer"
 import Header from "@/components/Header"
 import { LiveRequests } from "@/components/LiveRequests"
-import { Toaster } from "sonner"
+import { Toaster } from "react-hot-toast"
 import { AuthProvider } from "@/components/AuthProvider"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -30,7 +30,7 @@ export default function RootLayout({
               <main className="flex-1">{children}</main>
               <Footer />
             </div>
-            <Toaster position="top-center" richColors />
+            <Toaster position="top-center" />
           </ThemeProvider>
         </AuthProvider>
       </body>

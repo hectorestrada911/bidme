@@ -146,7 +146,8 @@ export async function GET(request: Request) {
             id: offer.id,
             createdAt: offer.createdAt,
             status: offer.status,
-            user: offer.user
+            user: offer.user,
+            userId: offer.userId
           }))
         )
       }

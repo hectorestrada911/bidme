@@ -101,7 +101,7 @@ export default async function RequestDetailPage({
         <div className="mb-6 space-y-1 text-gray-300">
           <div><span className="font-semibold text-white">Quantity:</span> {request.quantity}</div>
           <div><span className="font-semibold text-white">Max Budget:</span> ${request.budget}</div>
-          <div><span className="font-semibold text-white">Needed By:</span> {new Date(request.deadline).toLocaleDateString()}</div>
+          <div><span className="font-semibold text-white">Preferred Deadline:</span> {new Date(request.deadline).toLocaleDateString()}</div>
           <div><span className="font-semibold text-white">Posted:</span> {new Date(request.createdAt).toLocaleString()}</div>
         </div>
         {isRequestOwner && (

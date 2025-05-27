@@ -123,7 +123,7 @@ export default function RequestBrowserPage() {
                 <div className="space-y-2 text-gray-400">
                   <div>Budget: ${request.budget}</div>
                   <div>Quantity: {request.quantity}</div>
-                  <div>Deadline: {new Date(request.deadline).toLocaleDateString()}</div>
+                  <div>Preferred Deadline: {new Date(request.deadline).toLocaleDateString()}</div>
                   <div>Offers: {request._count.offers}</div>
                 </div>
                 <Link href={`/requests/${request.id}`} className="mt-4">

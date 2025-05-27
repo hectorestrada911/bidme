@@ -306,7 +306,7 @@ export default function PostRequest() {
               <div className="space-y-2">
                 <label htmlFor="deadline" className="inline-flex items-center gap-2 text-sm font-medium text-blue-100">
                   <Calendar className="w-4 h-4 text-blue-400" />
-                  Deadline
+                  Preferred Deadline
                 </label>
                 <Input
                   id="deadline"
@@ -322,7 +322,7 @@ export default function PostRequest() {
                     animate={{ opacity: 1, y: 0 }} 
                     className="text-sm text-red-400"
                   >
-                    {errors.deadline}
+                    {errors.deadline.replace('Deadline', 'Preferred Deadline')}
                   </motion.p>
                 )}
               </div>

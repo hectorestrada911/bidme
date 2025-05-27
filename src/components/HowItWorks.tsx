@@ -40,7 +40,7 @@ export function HowItWorks() {
             <ClipboardList className="h-10 w-10 mb-3" />
             <h3 className="text-lg font-semibold mb-1">Post Your Request</h3>
             <p className="text-sm text-gray-400">
-              Set your item, quantity, budget & deadline.
+              Set your item, quantity, budget & preferred deadline.
             </p>
           </motion.div>
 

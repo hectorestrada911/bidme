@@ -39,7 +39,7 @@ export default async function RequestsPage({ searchParams }: { searchParams?: { 
                     <div>Category: {req.category}</div>
                     <div>Quantity: {req.quantity}</div>
                     <div>Budget: ${req.budget}</div>
-                    <div>Deadline: {new Date(req.deadline).toLocaleDateString()}</div>
+                    <div>Preferred Deadline: {new Date(req.deadline).toLocaleDateString()}</div>
                   </div>
                   <Button variant="outline" className="w-full border-blue-400 text-blue-400 hover:bg-blue-400/10 mt-4">
                     Make an Offer

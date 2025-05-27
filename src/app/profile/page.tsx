@@ -522,19 +522,19 @@ export default function ProfilePage() {
                         </div>
                       </motion.div>
                     ))}
+                  </div>
                 </div>
-              </div>
-            </Card>
-          ) : (
-            <Card className="p-4 bg-blue-950/10 border-blue-900/50">
-              <div className="text-center py-8 text-blue-400">
-                <Activity className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>No requests yet</p>
-                <Button variant="link" className="mt-2" onClick={() => window.location.href = '/post-request'}>Create your first request</Button>
-              </div>
-            </Card>
-          )}
-        </motion.div>
+              </Card>
+            ) : (
+              <Card className="p-4 bg-blue-950/10 border-blue-900/50">
+                <div className="text-center py-8 text-blue-400">
+                  <Activity className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>No requests yet</p>
+                  <Button variant="link" className="mt-2" onClick={() => window.location.href = '/post-request'}>Create your first request</Button>
+                </div>
+              </Card>
+            )}
+          </motion.div>
 
         {/* My Offers */}
         <motion.div 
@@ -641,51 +641,51 @@ export default function ProfilePage() {
                         </div>
                       </motion.div>
                     ))}
+                  </div>
                 </div>
-              </div>
-            </Card>
-          ) : (
-            <Card className="p-4 bg-blue-950/10 border-blue-900/50">
-              <div className="text-center py-8 text-blue-400">
-                <Activity className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                <p>No offers made yet</p>
+              </Card>
+            ) : (
+              <Card className="p-4 bg-blue-950/10 border-blue-900/50">
+                <div className="text-center py-8 text-blue-400">
+                  <Activity className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                  <p>No offers made yet</p>
                 <Button variant="link" className="mt-2" onClick={() => window.location.href = '/requests'}>Browse requests</Button>
-              </div>
-            </Card>
+  </div>
+</Card>
           )}
-        </motion.div>
+</motion.div>
 
         {/* Offers Received Section */}
         <div className="space-y-4 mt-8">
           <h2 className="text-xl font-semibold text-white">Offers Received</h2>
           {offersReceived.length > 0 ? (
-            <Card className="bg-blue-950/10 border-blue-900/50">
+      <Card className="bg-blue-950/10 border-blue-900/50">
               <div className="p-4 space-y-4">
                 {offersReceived
                   .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
                   .map((offer) => (
-                    <motion.div
+              <motion.div
                       key={offer.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
                       className="p-4 rounded-lg bg-blue-900/20 border border-blue-900/30 hover:border-blue-400/20 transition-all duration-200"
-                    >
+              >
                       <div className="flex flex-col gap-4">
                         <div className="flex items-center gap-4">
-                          <div className="flex-shrink-0">
-                            <div className="w-12 h-12 rounded-full overflow-hidden bg-blue-950/50">
+                  <div className="flex-shrink-0">
+                    <div className="w-12 h-12 rounded-full overflow-hidden bg-blue-950/50">
                               {offer.user?.image && (
-                                <Image
+                        <Image
                                   src={offer.user.image}
                                   alt={offer.user.name || 'User'}
-                                  width={48}
-                                  height={48}
-                                  className="object-cover"
-                                />
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex-grow">
+                            width={48}
+                            height={48}
+                            className="object-cover"
+                          />
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex-grow">
                             <div className="space-y-1">
                               <div className="flex justify-between items-center">
                                 <div className="space-y-1">
@@ -699,8 +699,8 @@ export default function ProfilePage() {
                                   <span className="text-2xl font-bold text-green-400">${offer.amount.toLocaleString()}</span>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-2 text-sm text-blue-400">
-                                <Calendar className="w-4 h-4" />
+                          <div className="flex items-center gap-2 text-sm text-blue-400">
+                            <Calendar className="w-4 h-4" />
                                 <span>{new Date(offer.createdAt).toLocaleDateString()}</span>
                               </div>
                             </div>
@@ -790,32 +790,32 @@ export default function ProfilePage() {
                                 </div>
                               </>
                             ) : null}
-                          </div>
-                        </div>
                       </div>
-                    </motion.div>
-                  ))}
-              </div>
-            </Card>
-          ) : (
-            <Card className="p-4 bg-blue-950/10 border-blue-900/50">
-              <div className="text-center py-8 text-blue-400">
-                <Activity className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+          </div>
+        </Card>
+      ) : (
+        <Card className="p-4 bg-blue-950/10 border-blue-900/50">
+          <div className="text-center py-8 text-blue-400">
+            <Activity className="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <p className="text-lg">No offers received yet</p>
                 <p className="text-sm">Create a request to start receiving offers!</p>
-              </div>
-            </Card>
-          )}
+          </div>
+        </Card>
+      )}
         </div>
       </div>
 
       {showOfferModal && selectedOffer && (
-        <motion.div
+  <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
           className="fixed inset-0 z-50 overflow-y-auto"
-        >
+  >
           <div className="min-h-screen flex items-center justify-center bg-black bg-opacity-60">
             <motion.div
               initial={{ y: 20, opacity: 0 }}
@@ -834,13 +834,13 @@ export default function ProfilePage() {
                 <div className="flex items-center gap-4 mb-6">
                   <div className="w-16 h-16 rounded-full overflow-hidden bg-gradient-to-br from-blue-800/50 via-blue-900/50 to-blue-900/50 border-2 border-blue-900/50">
                     {selectedOffer.user?.image ? (
-                      <Image
+                          <Image
                         src={selectedOffer.user.image}
                         alt={selectedOffer.user.name || 'User'}
                         width={64}
                         height={64}
-                        className="object-cover"
-                      />
+                            className="object-cover"
+                          />
                     ) : (
                       <div className="w-16 h-16 flex items-center justify-center bg-gradient-to-br from-blue-900 to-blue-900 text-white text-2xl font-bold rounded-full">
                         <div className="text-2xl font-bold">{selectedOffer.user?.name?.[0] || '?'}</div>
@@ -873,9 +873,9 @@ export default function ProfilePage() {
                     <div className="p-4 bg-gradient-to-br from-blue-900/50 via-blue-950/50 to-blue-900/50 rounded-xl">
                       <div className="uppercase text-xs text-blue-400 font-semibold mb-2 tracking-wider">Date</div>
                       <div className="text-blue-400 text-base">{new Date(selectedOffer.createdAt).toLocaleDateString()}</div>
-                    </div>
-                  </div>
-                </div>
+                          </div>
+                        </div>
+                        </div>
 
                 <div className="mt-8 flex justify-end gap-4">
                   <Button
@@ -903,9 +903,9 @@ export default function ProfilePage() {
                       'Accept & Pay'
                     )}
                   </Button>
-                </div>
-              </div>
-            </motion.div>
+                    </div>
+                  </div>
+                </motion.div>
           </div>
         </motion.div>
       )}
@@ -966,7 +966,7 @@ export default function ProfilePage() {
               </Button>
             </div>
           </div>
-        </div>
+          </div>
       )}
 
       {showEditOfferModal && editOffer && (
@@ -1020,9 +1020,9 @@ export default function ProfilePage() {
               >
                 {editSubmitting ? 'Saving...' : 'Save Changes'}
               </Button>
-            </div>
-          </div>
-        </div>
+</div>
+</div>
+</div>
       )}
     </div>
   )

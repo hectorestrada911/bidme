@@ -59,7 +59,7 @@ export default function RequestForm() {
 
       const deadline = new Date(formData.deadline)
       if (deadline <= new Date()) {
-        throw new Error("Deadline must be in the future")
+        throw new Error("Preferred Deadline must be in the future")
       }
 
       // Check if user is authenticated
@@ -194,7 +194,7 @@ export default function RequestForm() {
           </div>
 
           <div>
-            <Label htmlFor="deadline">Deadline</Label>
+            <Label htmlFor="deadline">Preferred Deadline</Label>
             <Input
               id="deadline"
               name="deadline"

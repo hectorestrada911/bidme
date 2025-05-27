@@ -164,7 +164,7 @@ export function LiveRequests() {
                       </div>
                       <div className="flex items-center justify-between">
                         <p className="text-sm text-muted-foreground">
-                          Deadline: {new Date(req.deadline).toLocaleDateString()}
+                          Preferred Deadline: {new Date(req.deadline).toLocaleDateString()}
                         </p>
                         <p className="text-sm font-medium">
                           {req._count.offers} offers
