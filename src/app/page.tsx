@@ -6,21 +6,21 @@ import { Card } from "../components/ui/card"
 import { 
   ChevronRight, Lock, Star, Shield,
   Briefcase, ShoppingBag, Home as HomeIcon, Wrench, Camera, Laptop,
-  ArrowRight, Clock, TrendingDown, Users2
+  ArrowRight, Clock, TrendingDown, Users2, Cpu, Shirt, Gem, Package, Diamond
 } from "lucide-react"
 import Link from "next/link"
 import { LiveRequests } from "../components/LiveRequests"
 
 import { CATEGORY_OPTIONS } from '@/lib/categories'
 
-const categories = [
-  { name: "Business Services", icon: Briefcase },
-  { name: "Products", icon: ShoppingBag },
-  { name: "Home Services", icon: HomeIcon },
-  { name: "Professional Work", icon: Wrench },
-  { name: "Creative Services", icon: Camera },
-  { name: "Technology", icon: Laptop },
-]
+const LucideIcons = {
+  ShoppingBag,
+  Cpu,
+  Shirt,
+  Gem,
+  Package,
+  Diamond,
+}
 
 export default function Home() {
   return (
@@ -241,14 +241,17 @@ export default function Home() {
             viewport={{ once: true }}
             className="grid grid-cols-2 md:grid-cols-3 gap-6"
           >
-            {categories.map((category) => (
-              <Link href={`/requests?category=${category.name}`} key={category.name}>
-                <Card className="p-8 text-center hover:bg-blue-950/30 transition-all duration-300 cursor-pointer bg-blue-950/10 border-blue-900/50 h-full hover:scale-105">
-                  <category.icon className="h-10 w-10 mx-auto mb-4 text-blue-400" />
-                  <h3 className="text-base font-medium text-gray-200">{category.name}</h3>
-                </Card>
-              </Link>
-            ))}
+            {CATEGORY_OPTIONS.map((cat) => {
+              const Icon = LucideIcons[cat.icon as keyof typeof LucideIcons] || ShoppingBag
+              return (
+                <Link href={`/requests?category=${cat.label}`} key={cat.value}>
+                  <Card className="p-8 text-center hover:bg-blue-950/30 transition-all duration-300 cursor-pointer bg-blue-950/10 border-blue-900/50 h-full hover:scale-105">
+                    <Icon className="h-10 w-10 mx-auto mb-4 text-blue-400" />
+                    <h3 className="text-base font-medium text-gray-200">{cat.label}</h3>
+                  </Card>
+                </Link>
+              )
+            })}
           </motion.div>
         </div>
       </section>
