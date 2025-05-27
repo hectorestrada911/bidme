@@ -80,7 +80,7 @@ export default function OffersSection({ requestId }: { requestId: string }) {
                 <div className="text-gray-300 mb-1 line-clamp-2">{offer.message}</div>
                 <div className="text-xs text-gray-500 mb-2">{new Date(offer.createdAt).toLocaleString()}</div>
                 <div className="flex flex-wrap gap-1 mt-2">
-                  {offer.categories.map((category: string) => (
+                  {(Array.isArray(offer.categories) ? offer.categories : offer.category ? [offer.category] : []).map((category: string) => (
                     <span key={category} className="px-2 py-0.5 bg-blue-900/50 text-blue-300 text-xs rounded-full">
                       {category}
                     </span>
