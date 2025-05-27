@@ -3,6 +3,7 @@ import { PrismaClient } from '@prisma/client'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import type { ExtendedSession, OfferWithUser } from '@/types'
+import { sendNewOfferEmail } from '@/lib/email'
 
 const prisma = new PrismaClient()
 
@@ -86,6 +87,23 @@ export async function POST(request: Request) {
         }
       }
     }) as unknown as OfferWithUser
+
+    // Send email notification to request owner
+    try {
+      const requestOwner = await prisma.user.findUnique({ where: { id: foundRequest.userId } })
+      if (requestOwner?.email) {
+        await sendNewOfferEmail({
+          to: requestOwner.email,
+          userName: requestOwner.name || 'there',
+          requestTitle: foundRequest.title,
+          offerAmount: amount,
+          offerMessage: message,
+          offerUrl: `${process.env.NEXTAUTH_URL}/requests/${requestId}`
+        })
+      }
+    } catch (e) {
+      console.error('Failed to send offer email:', e)
+    }
 
     return NextResponse.json(offer, { status: 201 })
   } catch (error) {
