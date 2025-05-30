@@ -8,6 +8,7 @@ import { motion } from "framer-motion"
 import { useState, useRef, useEffect } from "react"
 import { RequestWithUser, RequestStatus } from "@/types"
 import Link from "next/link"
+import { LoadingCardGrid } from "@/components/ui/loading-card"
 
 const getStatusColor = (status: RequestStatus) => {
   switch (status) {
@@ -97,21 +98,7 @@ export function LiveRequests() {
   if (loading) {
     return (
       <div className="w-full py-12 space-y-6">
-        <div className="grid grid-rows-2 grid-flow-col gap-6 px-4">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="w-[300px] sm:w-[350px] h-[220px] rounded-xl bg-blue-950/10 border border-blue-900/50 animate-pulse">
-              <div className="h-full p-6 flex flex-col gap-4">
-                <div className="h-6 bg-blue-900/20 rounded w-2/3" />
-                <div className="space-y-3 flex-grow">
-                  <div className="h-4 bg-blue-900/20 rounded w-full" />
-                  <div className="h-4 bg-blue-900/20 rounded w-full" />
-                  <div className="h-4 bg-blue-900/20 rounded w-full" />
-                </div>
-                <div className="h-10 bg-blue-900/20 rounded w-full" />
-              </div>
-            </div>
-          ))}
-        </div>
+        <LoadingCardGrid />
       </div>
     )
   }

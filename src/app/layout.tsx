@@ -7,6 +7,7 @@ import Header from "@/components/Header"
 import { LiveRequests } from "@/components/LiveRequests"
 import { Toaster } from "react-hot-toast"
 import { AuthProvider } from "@/components/AuthProvider"
+import { ErrorBoundary } from "@/components/ErrorBoundary"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -27,7 +28,9 @@ export default function RootLayout({
           <ThemeProvider attribute="class" defaultTheme="dark" enableSystem disableTransitionOnChange>
             <div className="relative flex min-h-screen flex-col">
               <Header />
-              <main className="flex-1">{children}</main>
+              <ErrorBoundary>
+                <main className="flex-1">{children}</main>
+              </ErrorBoundary>
               <Footer />
             </div>
             <Toaster position="top-center" />
