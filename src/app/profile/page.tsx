@@ -11,6 +11,7 @@ import { useState, useEffect } from "react"
 import { loadStripe } from '@stripe/stripe-js'
 import { ShippingAddressForm, ShippingAddress } from '@/components/ShippingAddressForm'
 import { TrackingInfoForm, TrackingInfo } from '@/components/TrackingInfoForm'
+import { jsPDF } from 'jspdf'
 
 interface UserStats {
   totalRequests: number
@@ -366,6 +367,18 @@ export default function ProfilePage() {
   function handleGenerateInvoice(offer: Offer) {
     setInvoiceOffer(offer)
     setShowInvoiceModal(true)
+  }
+
+  // Add a function to handle invoice download
+  function handleDownloadInvoice(offer: Offer) {
+    const doc = new jsPDF();
+    doc.text('Invoice', 20, 20);
+    doc.text(`Offer ID: ${offer.id}`, 20, 30);
+    doc.text(`Amount: $${offer.amount.toLocaleString()}`, 20, 40);
+    doc.text(`Buyer: ${offer.request.user.name}`, 20, 50);
+    doc.text(`Shipping Address: ${offer.shippingAddress}`, 20, 60);
+    doc.text(`Tracking Info: ${offer.trackingNumber ? `${offer.carrier} - ${offer.trackingNumber}` : 'Not available'}`, 20, 70);
+    doc.save(`invoice-${offer.id}.pdf`);
   }
 
   if (loading) {
@@ -1166,6 +1179,13 @@ export default function ProfilePage() {
             </div>
             <Button variant="outline" className="mt-4 w-full" onClick={() => setShowInvoiceModal(false)}>
               Close
+            </Button>
+            <Button
+              variant="default"
+              className="mt-2 w-full bg-green-600 hover:bg-green-700 text-white"
+              onClick={() => handleDownloadInvoice(invoiceOffer)}
+            >
+              Download PDF
             </Button>
           </div>
         </div>
