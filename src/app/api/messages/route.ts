@@ -21,6 +21,17 @@ export async function POST(request: Request) {
       content,
     },
   })
+
+  // Create a notification for the receiver
+  await prisma.notification.create({
+    data: {
+      userId: receiverId,
+      type: 'message',
+      content: `You received a new message from ${session.user.name || 'a user'}`,
+      link: `/profile`, // You can update this to a direct chat link if you add conversation pages
+    },
+  })
+
   return NextResponse.json(message)
 }
 
