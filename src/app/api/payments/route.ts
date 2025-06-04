@@ -12,7 +12,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json()
-    const { offerId } = body
+    const { offerId, shippingAddress } = body
 
     if (!offerId) {
       return NextResponse.json({ error: 'Offer ID is required' }, { status: 400 })
@@ -62,12 +62,13 @@ export async function POST(request: Request) {
       },
     })
 
-    // Optionally update offer with session id
+    // Optionally update offer with session id and shipping address
     await prisma.offer.update({
       where: { id: offerId },
       data: {
         paymentId: checkoutSession.id,
         paymentStatus: 'PENDING',
+        shippingAddress: shippingAddress ? JSON.stringify(shippingAddress) : undefined,
       },
     })
 

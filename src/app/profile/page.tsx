@@ -9,6 +9,7 @@ import { Edit, Mail, Calendar, Activity, X, Star } from "lucide-react"
 import Image from "next/image"
 import { useState, useEffect } from "react"
 import { loadStripe } from '@stripe/stripe-js'
+import { ShippingAddressForm, ShippingAddress } from '@/components/ShippingAddressForm'
 
 interface UserStats {
   totalRequests: number
@@ -53,6 +54,7 @@ interface Offer {
   }
   credentials?: string
   deliveryDate?: string
+  shippingAddress?: string
 }
 
 export default function ProfilePage() {
@@ -95,6 +97,10 @@ export default function ProfilePage() {
   const [editSellerName, setEditSellerName] = useState('')
   const [editCredentials, setEditCredentials] = useState('')
   const [editDeliveryDate, setEditDeliveryDate] = useState('')
+  const [showShippingModal, setShowShippingModal] = useState(false)
+  const [shippingOfferId, setShippingOfferId] = useState<string | null>(null)
+  const [shippingLoading, setShippingLoading] = useState(false)
+  const [shippingAddress, setShippingAddress] = useState<ShippingAddress | null>(null)
 
   useEffect(() => {
     if (status === "loading") return
@@ -221,32 +227,38 @@ export default function ProfilePage() {
   }
 
   async function handleAcceptWithPayment(offerId: string) {
-    setPaymentLoading(offerId)
+    setShippingOfferId(offerId)
+    setShowShippingModal(true)
+  }
+
+  async function handleShippingSubmit(address: ShippingAddress) {
+    setShippingLoading(true)
+    setShippingAddress(address)
     try {
-      // Call payment API to create Checkout Session
+      // Call payment API to create Checkout Session, including shipping address
       const res = await fetch('/api/payments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ offerId })
+        body: JSON.stringify({ offerId: shippingOfferId, shippingAddress: address })
       })
       if (!res.ok) {
         const errData = await res.json()
         throw new Error(errData.error || 'Failed to create payment')
       }
       const { sessionId } = await res.json()
-      // Load Stripe.js
       const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
       if (!stripe) throw new Error('Stripe failed to load')
-      console.log('Stripe sessionId:', sessionId)
+      setShowShippingModal(false)
+      setShippingOfferId(null)
+      setShippingLoading(false)
       // Redirect to Stripe's payment page
-      const { error } = await stripe.redirectToCheckout({
-        sessionId
-      })
+      const { error } = await stripe.redirectToCheckout({ sessionId })
       if (error) throw new Error(error.message)
     } catch (err: any) {
       alert(err.message || 'Error starting payment. Please try again.')
-    } finally {
-      setPaymentLoading(null)
+      setShowShippingModal(false)
+      setShippingOfferId(null)
+      setShippingLoading(false)
     }
   }
 
@@ -636,6 +648,21 @@ export default function ProfilePage() {
                                   </Button>
                                 </div>
                               )}
+                              {offer.userId === session?.user?.id && offer.paymentStatus === 'PAID' && offer.shippingAddress && (
+                                <div className="mt-4 p-4 bg-blue-950/30 rounded-lg border border-blue-900/50">
+                                  <div className="text-blue-300 font-semibold mb-1">Shipping Address</div>
+                                  <div className="text-blue-100 text-sm whitespace-pre-line">
+                                    {(() => {
+                                      try {
+                                        const addr = JSON.parse(offer.shippingAddress)
+                                        return `${addr.name}\n${addr.address1}${addr.address2 ? `, ${addr.address2}` : ''}\n${addr.city}, ${addr.state} ${addr.zip}\n${addr.country}`
+                                      } catch {
+                                        return 'Invalid address data.'
+                                      }
+                                    })()}
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -1023,6 +1050,18 @@ export default function ProfilePage() {
 </div>
 </div>
 </div>
+      )}
+
+      {showShippingModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+          <div className="bg-blue-950 p-8 rounded-xl shadow-lg w-full max-w-md">
+            <h2 className="text-xl font-bold text-white mb-4">Shipping Address</h2>
+            <ShippingAddressForm onSubmit={handleShippingSubmit} loading={shippingLoading} />
+            <Button variant="outline" className="mt-4 w-full" onClick={() => setShowShippingModal(false)} disabled={shippingLoading}>
+              Cancel
+            </Button>
+          </div>
+        </div>
       )}
     </div>
   )
