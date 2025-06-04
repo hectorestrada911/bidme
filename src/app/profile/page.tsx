@@ -5,7 +5,7 @@ import { redirect } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
-import { Edit, Mail, Calendar, Activity, X, Star } from "lucide-react"
+import { Edit, Mail, Calendar, Activity, X, Star, CreditCard, CheckCircle, AlertCircle } from "lucide-react"
 import Image from "next/image"
 import { useState, useEffect } from "react"
 import { loadStripe } from '@stripe/stripe-js'
@@ -60,6 +60,40 @@ interface Offer {
   shippingAddress?: string
   trackingNumber?: string
   carrier?: string
+}
+
+function PaymentStatusBadge({ status }: { status?: string }) {
+  if (!status) return null;
+  
+  const statusConfig = {
+    PENDING: {
+      icon: <CreditCard className="w-4 h-4" />,
+      color: "text-yellow-400",
+      bgColor: "bg-yellow-400/10",
+      text: "Payment Pending"
+    },
+    PAID: {
+      icon: <CheckCircle className="w-4 h-4" />,
+      color: "text-green-400",
+      bgColor: "bg-green-400/10",
+      text: "Payment Complete"
+    },
+    FAILED: {
+      icon: <AlertCircle className="w-4 h-4" />,
+      color: "text-red-400",
+      bgColor: "bg-red-400/10",
+      text: "Payment Failed"
+    }
+  };
+
+  const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.PENDING;
+
+  return (
+    <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full ${config.bgColor} ${config.color}`}>
+      {config.icon}
+      <span className="text-xs font-medium">{config.text}</span>
+    </div>
+  );
 }
 
 export default function ProfilePage() {
@@ -374,13 +408,81 @@ export default function ProfilePage() {
   // Add a function to handle invoice download
   function handleDownloadInvoice(offer: Offer) {
     const doc = new jsPDF();
-    doc.text('Invoice', 20, 20);
-    doc.text(`Offer ID: ${offer.id}`, 20, 30);
-    doc.text(`Amount: $${offer.amount.toLocaleString()}`, 20, 40);
-    doc.text(`Buyer: ${offer.request.user.name}`, 20, 50);
-    doc.text(`Shipping Address: ${offer.shippingAddress}`, 20, 60);
-    doc.text(`Tracking Info: ${offer.trackingNumber ? `${offer.carrier} - ${offer.trackingNumber}` : 'Not available'}`, 20, 70);
-    doc.save(`invoice-${offer.id}.pdf`);
+    
+    // Add logo or title
+    doc.setFontSize(24);
+    doc.setTextColor(0, 51, 102); // Dark blue
+    doc.text('BidMe Invoice', 20, 20);
+    
+    // Add invoice details
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Invoice #: ${offer.id.slice(0, 8)}`, 20, 35);
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, 42);
+    
+    // Add seller and buyer information
+    doc.setFontSize(14);
+    doc.setTextColor(0, 51, 102);
+    doc.text('Seller Information', 20, 55);
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Name: ${offer.user?.name || 'N/A'}`, 20, 62);
+    
+    doc.setFontSize(14);
+    doc.setTextColor(0, 51, 102);
+    doc.text('Buyer Information', 20, 75);
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Name: ${offer.request.user.name}`, 20, 82);
+    
+    // Add shipping address
+    doc.setFontSize(14);
+    doc.setTextColor(0, 51, 102);
+    doc.text('Shipping Address', 20, 95);
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    try {
+      const addr = JSON.parse(offer.shippingAddress || '{}');
+      doc.text([
+        addr.name || 'N/A',
+        addr.address1 || 'N/A',
+        addr.address2 || '',
+        `${addr.city || ''}, ${addr.state || ''} ${addr.zip || ''}`,
+        addr.country || 'N/A'
+      ].filter(Boolean), 20, 102);
+    } catch {
+      doc.text('No shipping address provided', 20, 102);
+    }
+    
+    // Add order details
+    doc.setFontSize(14);
+    doc.setTextColor(0, 51, 102);
+    doc.text('Order Details', 20, 130);
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Request Title: ${offer.request.title}`, 20, 137);
+    doc.text(`Amount: $${offer.amount.toLocaleString()}`, 20, 144);
+    doc.text(`Delivery Date: ${offer.deliveryDate ? new Date(offer.deliveryDate).toLocaleDateString() : 'N/A'}`, 20, 151);
+    
+    // Add tracking information if available
+    if (offer.trackingNumber) {
+      doc.setFontSize(14);
+      doc.setTextColor(0, 51, 102);
+      doc.text('Tracking Information', 20, 164);
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Carrier: ${offer.carrier}`, 20, 171);
+      doc.text(`Tracking Number: ${offer.trackingNumber}`, 20, 178);
+    }
+    
+    // Add footer
+    doc.setFontSize(10);
+    doc.setTextColor(128, 128, 128);
+    doc.text('Thank you for using BidMe!', 20, 280);
+    doc.text('This is an automatically generated invoice.', 20, 287);
+    
+    // Save the PDF
+    doc.save(`invoice-${offer.id.slice(0, 8)}.pdf`);
   }
 
   if (loading) {

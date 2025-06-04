@@ -59,24 +59,26 @@ model StatusHistory {
 model Offer {
   id            String   @id @default(cuid())
   requestId     String
-  amount        Int
+  amount        Float
   message       String
   sellerName    String?
   credentials   String?
   deliveryDate  DateTime?
   status        String   @default("PENDING")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  userId        String?
+  paymentStatus String?
   paymentId     String?
-  paymentStatus String   @default("PENDING")
+  paymentAttempts Int    @default(0)
   shippingAddress String?
   trackingNumber String?
-  carrier        String?
-  request       Request  @relation("RequestOffers", fields: [requestId], references: [id])
-  user          User?    @relation(fields: [userId], references: [id])
+  carrier       String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  userId        String
+  paymentStatus String   @default("PENDING")
+  user          User     @relation(fields: [userId], references: [id])
   statusHistory OfferStatusHistory[]
   reviews       Review[]
+  disputes      Dispute[]
 }
 
 model OfferStatusHistory {
@@ -100,6 +102,7 @@ model User {
   sessions      Session[]
   requests      Request[]
   offers        Offer[]
+  disputes      Dispute[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @default(now()) // For migration
   reviewsGiven     Review[] @relation("Reviewer")
@@ -177,4 +180,16 @@ model Notification {
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id])
+}
+
+model Dispute {
+  id        String   @id @default(cuid())
+  offerId   String
+  reason    String
+  status    String   @default("OPEN")
+  raisedBy  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  offer     Offer    @relation(fields: [offerId], references: [id])
+  user      User     @relation(fields: [raisedBy], references: [id])
 }

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { sendNewMessageEmail } from '@/lib/email'
 
 // Send a message
 export async function POST(request: Request) {
@@ -31,6 +32,21 @@ export async function POST(request: Request) {
       link: `/profile`, // You can update this to a direct chat link if you add conversation pages
     },
   })
+
+  // Send email to the receiver
+  try {
+    const receiver = await prisma.user.findUnique({ where: { id: receiverId } })
+    if (receiver?.email) {
+      await sendNewMessageEmail({
+        to: receiver.email,
+        userName: receiver.name || 'there',
+        messageContent: content,
+        messageUrl: `${process.env.NEXTAUTH_URL}/profile`,
+      })
+    }
+  } catch (e) {
+    console.error('Failed to send message email:', e)
+  }
 
   return NextResponse.json(message)
 }

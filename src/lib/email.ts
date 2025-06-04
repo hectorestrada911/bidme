@@ -11,7 +11,7 @@ export async function sendNewOfferEmail({ to, userName, requestTitle, offerAmoun
   offerUrl: string
 }) {
   await resend.emails.send({
-    from: 'notifications@bidme.dev', // Use your verified sender or Resend's dev domain
+    from: 'onboarding@resend.dev', // Use Resend's test sender for now
     to,
     subject: 'You have a new offer on your request!',
     html: `
@@ -23,4 +23,24 @@ export async function sendNewOfferEmail({ to, userName, requestTitle, offerAmoun
       <p>Thanks for using BidMe!</p>
     `
   });
+}
+
+export async function sendNewMessageEmail({ to, userName, messageContent, messageUrl }: {
+  to: string,
+  userName: string,
+  messageContent: string,
+  messageUrl: string
+}) {
+  await resend.emails.send({
+    from: 'onboarding@resend.dev', // Use Resend's test sender for now
+    to,
+    subject: 'You have a new message on BidMe!',
+    html: `
+      <p>Hi ${userName},</p>
+      <p>You just received a new message:</p>
+      <blockquote style="background:#f4f4f4;padding:10px;border-radius:6px;">${messageContent}</blockquote>
+      <p><a href="${messageUrl}" style="background:#2563eb;color:white;padding:10px 20px;border-radius:6px;text-decoration:none;">View Message</a></p>
+      <p>Thanks for using BidMe!</p>
+    `
+  })
 } 
