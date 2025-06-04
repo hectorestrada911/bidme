@@ -71,6 +71,8 @@ model Offer {
   paymentId     String?
   paymentStatus String   @default("PENDING")
   shippingAddress String?
+  trackingNumber String?
+  carrier        String?
   request       Request  @relation("RequestOffers", fields: [requestId], references: [id])
   user          User?    @relation(fields: [userId], references: [id])
   statusHistory OfferStatusHistory[]
