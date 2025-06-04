@@ -59,13 +59,13 @@ model StatusHistory {
 model Offer {
   id            String   @id @default(cuid())
   requestId     String
+  request       Request  @relation("RequestOffers", fields: [requestId], references: [id])
   amount        Float
   message       String
   sellerName    String?
   credentials   String?
   deliveryDate  DateTime?
   status        String   @default("PENDING")
-  paymentStatus String?
   paymentId     String?
   paymentAttempts Int    @default(0)
   shippingAddress String?
