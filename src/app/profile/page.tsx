@@ -12,6 +12,7 @@ import { loadStripe } from '@stripe/stripe-js'
 import { ShippingAddressForm, ShippingAddress } from '@/components/ShippingAddressForm'
 import { TrackingInfoForm, TrackingInfo } from '@/components/TrackingInfoForm'
 import { jsPDF } from 'jspdf'
+import MessagingUI from '@/components/MessagingUI'
 
 interface UserStats {
   totalRequests: number
@@ -110,6 +111,7 @@ export default function ProfilePage() {
   const [trackingLoading, setTrackingLoading] = useState(false)
   const [showInvoiceModal, setShowInvoiceModal] = useState(false)
   const [invoiceOffer, setInvoiceOffer] = useState<Offer | null>(null)
+  const [openChatOfferId, setOpenChatOfferId] = useState<string | null>(null)
 
   useEffect(() => {
     if (status === "loading") return
@@ -753,6 +755,23 @@ export default function ProfilePage() {
                                   </Button>
                                 </>
                               )}
+                              {offer.request.userId && offer.request.userId !== session?.user?.id && (
+                                <div className="mt-4">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="border-blue-400 text-blue-400"
+                                    onClick={() => setOpenChatOfferId(openChatOfferId === offer.id ? null : offer.id)}
+                                  >
+                                    {openChatOfferId === offer.id ? 'Close Chat' : 'Message Buyer'}
+                                  </Button>
+                                  {openChatOfferId === offer.id && (
+                                    <div className="mt-2">
+                                      <MessagingUI otherUserId={offer.request.userId} />
+                                    </div>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -907,6 +926,23 @@ export default function ProfilePage() {
                                 </div>
                               </>
                             ) : null}
+                            {offer.userId && offer.userId !== session?.user?.id && (
+                              <div className="mt-4">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="border-blue-400 text-blue-400"
+                                  onClick={() => setOpenChatOfferId(openChatOfferId === offer.id ? null : offer.id)}
+                                >
+                                  {openChatOfferId === offer.id ? 'Close Chat' : 'Message Seller'}
+                                </Button>
+                                {openChatOfferId === offer.id && (
+                                  <div className="mt-2">
+                                    <MessagingUI otherUserId={offer.userId} />
+                                  </div>
+                                )}
+                              </div>
+                            )}
                       </div>
                     </div>
                   </div>

@@ -104,6 +104,9 @@ model User {
   updatedAt     DateTime  @default(now()) // For migration
   reviewsGiven     Review[] @relation("Reviewer")
   reviewsReceived  Review[] @relation("Reviewee")
+  sentMessages     Message[] @relation("SentMessages")
+  receivedMessages Message[] @relation("ReceivedMessages")
+  notifications    Notification[]
 }
 
 model Account {
@@ -141,16 +144,37 @@ model VerificationToken {
 }
 
 model Review {
-  id          String   @id @default(uuid())
-  offer       Offer    @relation(fields: [offerId], references: [id])
+  id          String   @id @default(cuid())
   offerId     String
-  reviewer    User     @relation("Reviewer", fields: [reviewerId], references: [id])
   reviewerId  String
-  reviewee    User     @relation("Reviewee", fields: [revieweeId], references: [id])
   revieweeId  String
   rating      Int
   comment     String
   createdAt   DateTime @default(now())
+  offer       Offer    @relation(fields: [offerId], references: [id])
+  reviewer    User     @relation("Reviewer", fields: [reviewerId], references: [id])
+  reviewee    User     @relation("Reviewee", fields: [revieweeId], references: [id])
 
   @@unique([offerId, reviewerId])
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  senderId  String
+  receiverId String
+  content   String
+  timestamp DateTime @default(now())
+  sender    User     @relation("SentMessages", fields: [senderId], references: [id])
+  receiver  User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // e.g. 'offer', 'message', 'order', 'review'
+  content   String   // Human-readable message
+  link      String?  // Optional: link to relevant page
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
 }
