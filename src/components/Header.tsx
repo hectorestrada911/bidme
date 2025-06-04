@@ -11,6 +11,7 @@ import {
 import { User, LogOut, Menu } from "lucide-react"
 import Image from "next/image"
 import React from "react"
+import NotificationBell from './NotificationBell'
 
 export default function Header() {
   const { data: session, status } = useSession()
@@ -42,6 +43,8 @@ export default function Header() {
               Post Request
             </Button>
           </Link>
+          {/* Notification Bell */}
+          <NotificationBell />
           {status === "loading" ? null : session ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
