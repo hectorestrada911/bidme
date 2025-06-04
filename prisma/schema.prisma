@@ -79,6 +79,7 @@ model Offer {
   statusHistory OfferStatusHistory[]
   reviews       Review[]
   disputes      Dispute[]
+  orders        Order[]
 }
 
 model OfferStatusHistory {
@@ -110,6 +111,7 @@ model User {
   sentMessages     Message[] @relation("SentMessages")
   receivedMessages Message[] @relation("ReceivedMessages")
   notifications    Notification[]
+  orders           Order[]        @relation("BuyerOrders")
 }
 
 model Account {
@@ -192,4 +194,20 @@ model Dispute {
   updatedAt DateTime @updatedAt
   offer     Offer    @relation(fields: [offerId], references: [id])
   user      User     @relation(fields: [raisedBy], references: [id])
+}
+
+model Order {
+  id              String   @id @default(cuid())
+  offerId         String
+  offer           Offer    @relation(fields: [offerId], references: [id])
+  buyerId         String
+  buyer           User     @relation("BuyerOrders", fields: [buyerId], references: [id])
+  paymentId       String
+  amount          Float
+  status          String   @default("PROCESSING") // PROCESSING, SHIPPED, DELIVERED, COMPLETED, CANCELLED
+  shippingAddress String?
+  trackingNumber  String?
+  carrier         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
