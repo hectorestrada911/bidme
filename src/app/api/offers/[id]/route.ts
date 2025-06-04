@@ -13,25 +13,40 @@ export async function PATCH(request: Request, { params }: { params: { id: string
     }
     const offerId = params.id
     const body = await request.json()
-    const { amount, message } = body
-    if (!amount || !message) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
-    }
+    const { amount, message, trackingNumber, carrier } = body
     const offer = await prisma.offer.findUnique({ where: { id: offerId } })
     if (!offer) {
       return NextResponse.json({ error: 'Offer not found' }, { status: 404 })
     }
-    if (offer.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Not authorized' }, { status: 403 })
+    // Allow editing offer if pending
+    if (amount && message) {
+      if (offer.userId !== session.user.id) {
+        return NextResponse.json({ error: 'Not authorized' }, { status: 403 })
+      }
+      if (offer.status !== 'PENDING') {
+        return NextResponse.json({ error: 'Cannot edit offer after it is accepted or paid' }, { status: 400 })
+      }
+      const updatedOffer = await prisma.offer.update({
+        where: { id: offerId },
+        data: { amount, message }
+      })
+      return NextResponse.json(updatedOffer)
     }
-    if (offer.status !== 'PENDING') {
-      return NextResponse.json({ error: 'Cannot edit offer after it is accepted or paid' }, { status: 400 })
+    // Allow adding tracking info if seller and offer is paid or delivered
+    if (trackingNumber && carrier) {
+      if (offer.userId !== session.user.id) {
+        return NextResponse.json({ error: 'Not authorized' }, { status: 403 })
+      }
+      if (offer.paymentStatus !== 'PAID' && offer.status !== 'DELIVERED') {
+        return NextResponse.json({ error: 'Can only add tracking info after payment' }, { status: 400 })
+      }
+      const updatedOffer = await prisma.offer.update({
+        where: { id: offerId },
+        data: { trackingNumber, carrier }
+      })
+      return NextResponse.json(updatedOffer)
     }
-    const updatedOffer = await prisma.offer.update({
-      where: { id: offerId },
-      data: { amount, message }
-    })
-    return NextResponse.json(updatedOffer)
+    return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
   } catch (error) {
     console.error('Error editing offer:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

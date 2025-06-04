@@ -10,6 +10,7 @@ import Image from "next/image"
 import { useState, useEffect } from "react"
 import { loadStripe } from '@stripe/stripe-js'
 import { ShippingAddressForm, ShippingAddress } from '@/components/ShippingAddressForm'
+import { TrackingInfoForm, TrackingInfo } from '@/components/TrackingInfoForm'
 
 interface UserStats {
   totalRequests: number
@@ -55,6 +56,8 @@ interface Offer {
   credentials?: string
   deliveryDate?: string
   shippingAddress?: string
+  trackingNumber?: string
+  carrier?: string
 }
 
 export default function ProfilePage() {
@@ -101,6 +104,9 @@ export default function ProfilePage() {
   const [shippingOfferId, setShippingOfferId] = useState<string | null>(null)
   const [shippingLoading, setShippingLoading] = useState(false)
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress | null>(null)
+  const [showTrackingModal, setShowTrackingModal] = useState(false)
+  const [trackingOfferId, setTrackingOfferId] = useState<string | null>(null)
+  const [trackingLoading, setTrackingLoading] = useState(false)
 
   useEffect(() => {
     if (status === "loading") return
@@ -327,6 +333,30 @@ export default function ProfilePage() {
       alert('Error withdrawing offer. Please try again.')
     } finally {
       setOfferActionLoading(null)
+    }
+  }
+
+  async function handleTrackingSubmit(info: TrackingInfo) {
+    setTrackingLoading(true)
+    try {
+      const res = await fetch(`/api/offers/${trackingOfferId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(info)
+      })
+      if (!res.ok) throw new Error('Failed to save tracking info')
+      setShowTrackingModal(false)
+      setTrackingOfferId(null)
+      // Refresh offers
+      const offersResponse = await fetch('/api/user/offers')
+      if (offersResponse.ok) {
+        const offersData = await offersResponse.json()
+        setOffers(offersData)
+      }
+    } catch (err) {
+      alert('Error saving tracking info. Please try again.')
+    } finally {
+      setTrackingLoading(false)
     }
   }
 
@@ -649,19 +679,40 @@ export default function ProfilePage() {
                                 </div>
                               )}
                               {offer.userId === session?.user?.id && offer.paymentStatus === 'PAID' && offer.shippingAddress && (
-                                <div className="mt-4 p-4 bg-blue-950/30 rounded-lg border border-blue-900/50">
-                                  <div className="text-blue-300 font-semibold mb-1">Shipping Address</div>
-                                  <div className="text-blue-100 text-sm whitespace-pre-line">
-                                    {(() => {
-                                      try {
-                                        const addr = JSON.parse(offer.shippingAddress)
-                                        return `${addr.name}\n${addr.address1}${addr.address2 ? `, ${addr.address2}` : ''}\n${addr.city}, ${addr.state} ${addr.zip}\n${addr.country}`
-                                      } catch {
-                                        return 'Invalid address data.'
-                                      }
-                                    })()}
+                                <>
+                                  <div className="mt-4 p-4 bg-blue-950/30 rounded-lg border border-blue-900/50">
+                                    <div className="text-blue-300 font-semibold mb-1">Shipping Address</div>
+                                    <div className="text-blue-100 text-sm whitespace-pre-line">
+                                      {(() => {
+                                        try {
+                                          const addr = JSON.parse(offer.shippingAddress)
+                                          return `${addr.name}\n${addr.address1}${addr.address2 ? `, ${addr.address2}` : ''}\n${addr.city}, ${addr.state} ${addr.zip}\n${addr.country}`
+                                        } catch {
+                                          return 'Invalid address data.'
+                                        }
+                                      })()}
+                                    </div>
                                   </div>
-                                </div>
+                                  {!offer.trackingNumber && (
+                                    <Button
+                                      size="sm"
+                                      variant="default"
+                                      className="mt-2 bg-blue-600 hover:bg-blue-700 text-white"
+                                      onClick={() => { setTrackingOfferId(offer.id); setShowTrackingModal(true); }}
+                                    >
+                                      Add Tracking Info
+                                    </Button>
+                                  )}
+                                  {offer.trackingNumber && (
+                                    <div className="mt-2 p-3 bg-blue-950/40 rounded-lg border border-blue-900/50">
+                                      <div className="text-blue-300 font-semibold mb-1">Tracking Info</div>
+                                      <div className="text-blue-100 text-sm">
+                                        <span className="font-medium">Carrier:</span> {offer.carrier}<br />
+                                        <span className="font-medium">Tracking #:</span> {offer.trackingNumber}
+                                      </div>
+                                    </div>
+                                  )}
+                                </>
                               )}
                             </div>
                           </div>
@@ -1058,6 +1109,18 @@ export default function ProfilePage() {
             <h2 className="text-xl font-bold text-white mb-4">Shipping Address</h2>
             <ShippingAddressForm onSubmit={handleShippingSubmit} loading={shippingLoading} />
             <Button variant="outline" className="mt-4 w-full" onClick={() => setShowShippingModal(false)} disabled={shippingLoading}>
+              Cancel
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {showTrackingModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+          <div className="bg-blue-950 p-8 rounded-xl shadow-lg w-full max-w-md">
+            <h2 className="text-xl font-bold text-white mb-4">Add Tracking Info</h2>
+            <TrackingInfoForm onSubmit={handleTrackingSubmit} loading={trackingLoading} />
+            <Button variant="outline" className="mt-4 w-full" onClick={() => setShowTrackingModal(false)} disabled={trackingLoading}>
               Cancel
             </Button>
           </div>
