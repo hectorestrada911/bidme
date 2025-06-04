@@ -107,6 +107,8 @@ export default function ProfilePage() {
   const [showTrackingModal, setShowTrackingModal] = useState(false)
   const [trackingOfferId, setTrackingOfferId] = useState<string | null>(null)
   const [trackingLoading, setTrackingLoading] = useState(false)
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false)
+  const [invoiceOffer, setInvoiceOffer] = useState<Offer | null>(null)
 
   useEffect(() => {
     if (status === "loading") return
@@ -358,6 +360,12 @@ export default function ProfilePage() {
     } finally {
       setTrackingLoading(false)
     }
+  }
+
+  // Add a function to handle invoice generation
+  function handleGenerateInvoice(offer: Offer) {
+    setInvoiceOffer(offer)
+    setShowInvoiceModal(true)
   }
 
   if (loading) {
@@ -712,6 +720,24 @@ export default function ProfilePage() {
                                       </div>
                                     </div>
                                   )}
+                                  {offer.status !== 'DELIVERED' && (
+                                    <Button
+                                      size="sm"
+                                      variant="default"
+                                      className="mt-2 bg-green-600 hover:bg-green-700 text-white"
+                                      onClick={() => handleOfferStatusChange(offer.id, 'DELIVERED')}
+                                    >
+                                      Mark as Shipped
+                                    </Button>
+                                  )}
+                                  <Button
+                                    size="sm"
+                                    variant="default"
+                                    className="mt-2 bg-purple-600 hover:bg-purple-700 text-white"
+                                    onClick={() => handleGenerateInvoice(offer)}
+                                  >
+                                    Generate Invoice
+                                  </Button>
                                 </>
                               )}
                             </div>
@@ -1122,6 +1148,24 @@ export default function ProfilePage() {
             <TrackingInfoForm onSubmit={handleTrackingSubmit} loading={trackingLoading} />
             <Button variant="outline" className="mt-4 w-full" onClick={() => setShowTrackingModal(false)} disabled={trackingLoading}>
               Cancel
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {showInvoiceModal && invoiceOffer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+          <div className="bg-blue-950 p-8 rounded-xl shadow-lg w-full max-w-md">
+            <h2 className="text-xl font-bold text-white mb-4">Invoice</h2>
+            <div className="text-blue-100 text-sm">
+              <div><span className="font-medium">Offer ID:</span> {invoiceOffer.id}</div>
+              <div><span className="font-medium">Amount:</span> ${invoiceOffer.amount.toLocaleString()}</div>
+              <div><span className="font-medium">Buyer:</span> {invoiceOffer.request.user.name}</div>
+              <div><span className="font-medium">Shipping Address:</span> {invoiceOffer.shippingAddress}</div>
+              <div><span className="font-medium">Tracking Info:</span> {invoiceOffer.trackingNumber ? `${invoiceOffer.carrier} - ${invoiceOffer.trackingNumber}` : 'Not available'}</div>
+            </div>
+            <Button variant="outline" className="mt-4 w-full" onClick={() => setShowInvoiceModal(false)}>
+              Close
             </Button>
           </div>
         </div>
