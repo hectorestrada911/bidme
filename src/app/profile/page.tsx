@@ -146,6 +146,7 @@ export default function ProfilePage() {
   const [showInvoiceModal, setShowInvoiceModal] = useState(false)
   const [invoiceOffer, setInvoiceOffer] = useState<Offer | null>(null)
   const [openChatOfferId, setOpenChatOfferId] = useState<string | null>(null)
+  const [showShippedConfirm, setShowShippedConfirm] = useState<{offerId: string | null}>({offerId: null});
 
   useEffect(() => {
     if (status === "loading") return
@@ -805,6 +806,43 @@ export default function ProfilePage() {
                               )}
                               {offer.userId === session?.user?.id && offer.paymentStatus === 'PAID' && offer.shippingAddress && (
                                 <>
+                                  <div className="mb-4 flex flex-col items-center">
+                                    <div className="flex items-center gap-2 w-full max-w-md justify-center">
+                                      {['PAID', 'DELIVERED', 'COMPLETED'].map((step, idx, arr) => (
+                                        <>
+                                          <div key={step} className={`flex flex-col items-center flex-1 ${offer.status === step || (step === 'PAID' && offer.status !== 'DELIVERED' && offer.status !== 'COMPLETED') ? 'font-bold text-green-400' : 'text-blue-300'}`}>
+                                            <div className={`rounded-full w-6 h-6 flex items-center justify-center border-2 ${offer.status === step || (step === 'PAID' && offer.status !== 'DELIVERED' && offer.status !== 'COMPLETED') ? 'border-green-400 bg-green-400/20' : 'border-blue-300 bg-blue-900/30'}`}>{idx + 1}</div>
+                                            <span className="text-xs mt-1">{step === 'PAID' ? 'Paid' : step === 'DELIVERED' ? 'Shipped' : 'Completed'}</span>
+                                          </div>
+                                          {idx < arr.length - 1 && <div className={`flex-1 h-1 ${offer.status === arr[idx + 1] || offer.status === 'COMPLETED' ? 'bg-green-400' : 'bg-blue-900'}`}></div>}
+                                        </>
+                                      ))}
+                                    </div>
+                                  </div>
+                                  <div className="mb-4 p-4 bg-blue-950/20 rounded-lg border border-blue-900/30">
+                                    <div className="font-semibold text-blue-200 mb-1">Order Summary</div>
+                                    <div className="text-blue-100 text-sm">
+                                      <b>Item:</b> {offer.request.title}<br />
+                                      <b>Amount:</b> ${offer.amount.toLocaleString()}<br />
+                                      {offer.deliveryDate && (
+                                        <><b>Estimated Delivery Date:</b> {new Date(offer.deliveryDate).toLocaleDateString()}<br /></>
+                                      )}
+                                    </div>
+                                    <div className="mt-2 text-blue-300 text-xs">
+                                      <b>Reminder:</b> Please ship within <b>2 business days</b> to ensure a great buyer experience.
+                                    </div>
+                                  </div>
+                                  <div className="mt-4 p-4 bg-green-900/30 rounded-lg border border-green-700/50 mb-4">
+                                    <div className="text-green-300 font-semibold mb-2 text-lg">Next Steps to Fulfill This Order</div>
+                                    <ol className="list-decimal list-inside text-green-100 text-sm space-y-1">
+                                      <li><b>Prepare the package</b> for shipment with the item(s) the buyer purchased.</li>
+                                      <li><b>Ship the package</b> to the address shown below using your preferred carrier.</li>
+                                      <li>After shipping, <b>enter the tracking number and carrier</b> using the button below.</li>
+                                      <li>Once shipped, click <b>"Mark as Shipped"</b> to notify the buyer.</li>
+                                      <li>Keep the buyer updated if there are any issues using the messaging feature.</li>
+                                    </ol>
+                                    <div className="mt-2 text-green-200 text-xs">Need help? <a href="mailto:hello@bidme.com" className="underline">Contact support</a></div>
+                                  </div>
                                   <div className="mt-4 p-4 bg-blue-950/30 rounded-lg border border-blue-900/50">
                                     <div className="text-blue-300 font-semibold mb-1">Shipping Address</div>
                                     <div className="text-blue-100 text-sm whitespace-pre-line">
@@ -832,20 +870,46 @@ export default function ProfilePage() {
                                     <div className="mt-2 p-3 bg-blue-950/40 rounded-lg border border-blue-900/50">
                                       <div className="text-blue-300 font-semibold mb-1">Tracking Info</div>
                                       <div className="text-blue-100 text-sm">
-                                        <span className="font-medium">Carrier:</span> {offer.carrier}<br />
+                                        <span className="font-medium">Carrier:</span> {offer.carrier}
+                                        <br />
                                         <span className="font-medium">Tracking #:</span> {offer.trackingNumber}
                                       </div>
                                     </div>
                                   )}
                                   {offer.status !== 'DELIVERED' && (
-                                    <Button
-                                      size="sm"
-                                      variant="default"
-                                      className="mt-2 bg-green-600 hover:bg-green-700 text-white"
-                                      onClick={() => handleOfferStatusChange(offer.id, 'DELIVERED')}
-                                    >
-                                      Mark as Shipped
-                                    </Button>
+                                    <>
+                                      <Button
+                                        size="sm"
+                                        variant="default"
+                                        className="mt-2 bg-green-600 hover:bg-green-700 text-white"
+                                        onClick={() => setShowShippedConfirm({offerId: offer.id})}
+                                      >
+                                        Mark as Shipped
+                                      </Button>
+                                      {showShippedConfirm.offerId === offer.id && (
+                                        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+                                          <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-sm text-center">
+                                            <h2 className="text-lg font-bold text-gray-900 mb-2">Confirm Shipment</h2>
+                                            <p className="text-gray-700 mb-4">Are you sure you've shipped this order to the buyer?</p>
+                                            <div className="flex justify-center gap-4">
+                                              <Button
+                                                variant="default"
+                                                className="bg-green-600 hover:bg-green-700 text-white"
+                                                onClick={() => { setShowShippedConfirm({offerId: null}); handleOfferStatusChange(offer.id, 'DELIVERED'); }}
+                                              >
+                                                Yes, I've shipped it
+                                              </Button>
+                                              <Button
+                                                variant="outline"
+                                                onClick={() => setShowShippedConfirm({offerId: null})}
+                                              >
+                                                Cancel
+                                              </Button>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      )}
+                                    </>
                                   )}
                                   <Button
                                     size="sm"
@@ -867,6 +931,15 @@ export default function ProfilePage() {
                                   >
                                     {openChatOfferId === offer.id ? 'Close Chat' : 'Message Buyer'}
                                   </Button>
+                                  <a
+                                    href="/help/seller-faq"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs text-blue-300 underline hover:text-blue-200"
+                                    title="Frequently Asked Questions for Sellers"
+                                  >
+                                    Seller FAQ
+                                  </a>
                                   {openChatOfferId === offer.id && (
                                     <div className="mt-2">
                                       <MessagingUI
@@ -1040,8 +1113,17 @@ export default function ProfilePage() {
                                   className="border-blue-400 text-blue-400"
                                   onClick={() => setOpenChatOfferId(openChatOfferId === offer.id ? null : offer.id)}
                                 >
-                                  {openChatOfferId === offer.id ? 'Close Chat' : 'Message Seller'}
+                                  {openChatOfferId === offer.id ? 'Close Chat' : 'Message Buyer'}
                                 </Button>
+                                <a
+                                  href="/help/seller-faq"
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-blue-300 underline hover:text-blue-200"
+                                  title="Frequently Asked Questions for Sellers"
+                                >
+                                  Seller FAQ
+                                </a>
                                 {openChatOfferId === offer.id && (
                                   <div className="mt-2">
                                     <MessagingUI
