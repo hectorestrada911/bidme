@@ -8,10 +8,17 @@ interface Message {
   senderId: string
   receiverId: string
   content: string
-  timestamp: string
+  createdAt: string
 }
 
-export default function MessagingUI({ otherUserId }: { otherUserId: string }) {
+interface MessagingUIProps {
+  offerId?: string
+  requestId?: string
+  senderId: string
+  receiverId: string
+}
+
+export default function MessagingUI({ offerId, requestId, senderId, receiverId }: MessagingUIProps) {
   const { data: session } = useSession()
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
@@ -19,12 +26,16 @@ export default function MessagingUI({ otherUserId }: { otherUserId: string }) {
 
   useEffect(() => {
     fetchMessages()
-  }, [otherUserId])
+    // eslint-disable-next-line
+  }, [offerId, requestId, senderId, receiverId])
 
   async function fetchMessages() {
     setLoading(true)
     try {
-      const res = await fetch(`/api/messages?userId=${otherUserId}`)
+      const queryParams = new URLSearchParams()
+      if (offerId) queryParams.append('offerId', offerId)
+      if (requestId) queryParams.append('requestId', requestId)
+      const res = await fetch(`/api/messages?${queryParams.toString()}`)
       const data = await res.json()
       setMessages(data)
     } catch (error) {
@@ -43,7 +54,13 @@ export default function MessagingUI({ otherUserId }: { otherUserId: string }) {
       const res = await fetch('/api/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ receiverId: otherUserId, content: newMessage }),
+        body: JSON.stringify({
+          content: newMessage,
+          senderId,
+          receiverId,
+          offerId,
+          requestId,
+        }),
       })
       const data = await res.json()
       setMessages([...messages, data])
@@ -65,14 +82,14 @@ export default function MessagingUI({ otherUserId }: { otherUserId: string }) {
             <div
               key={message.id}
               className={`p-2 mb-2 rounded-lg max-w-[80%] ${
-                message.senderId === session?.user?.id
+                message.senderId === senderId
                   ? 'bg-blue-600 text-white ml-auto'
                   : 'bg-blue-900 text-blue-100'
               }`}
             >
               <p>{message.content}</p>
               <small className="text-gray-300">
-                {new Date(message.timestamp).toLocaleString()}
+                {new Date(message.createdAt).toLocaleString()}
               </small>
             </div>
           ))

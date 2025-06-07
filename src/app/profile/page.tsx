@@ -869,7 +869,11 @@ export default function ProfilePage() {
                                   </Button>
                                   {openChatOfferId === offer.id && (
                                     <div className="mt-2">
-                                      <MessagingUI otherUserId={offer.request.userId} />
+                                      <MessagingUI
+                                        offerId={offer.id}
+                                        senderId={String(session?.user?.id)}
+                                        receiverId={String(offer.request.userId)}
+                                      />
                                     </div>
                                   )}
                                 </div>
@@ -1040,7 +1044,11 @@ export default function ProfilePage() {
                                 </Button>
                                 {openChatOfferId === offer.id && (
                                   <div className="mt-2">
-                                    <MessagingUI otherUserId={offer.userId} />
+                                    <MessagingUI
+                                      offerId={offer.id}
+                                      senderId={String(session?.user?.id)}
+                                      receiverId={String(offer.userId)}
+                                    />
                                   </div>
                                 )}
                               </div>

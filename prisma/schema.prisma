@@ -43,6 +43,7 @@ model Request {
   acceptedOfferId String?  @unique
   offers          Offer[]  @relation("RequestOffers")
   statusHistory   StatusHistory[]
+  messages        Message[]
 }
 
 model StatusHistory {
@@ -80,6 +81,7 @@ model Offer {
   reviews       Review[]
   disputes      Dispute[]
   orders        Order[]
+  messages      Message[]
 }
 
 model OfferStatusHistory {
@@ -165,12 +167,18 @@ model Review {
 
 model Message {
   id        String   @id @default(cuid())
+  content   String
   senderId  String
   receiverId String
-  content   String
-  timestamp DateTime @default(now())
+  offerId   String?
+  requestId String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime? @updatedAt
+
   sender    User     @relation("SentMessages", fields: [senderId], references: [id])
   receiver  User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  offer     Offer?   @relation(fields: [offerId], references: [id])
+  request   Request? @relation(fields: [requestId], references: [id])
 }
 
 model Notification {
