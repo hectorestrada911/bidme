@@ -1,7 +1,7 @@
 "use client"
 
 import { useSession } from "next-auth/react"
-import { redirect } from "next/navigation"
+import { redirect, useRouter, useSearchParams } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { motion } from "framer-motion"
@@ -98,6 +98,8 @@ function PaymentStatusBadge({ status }: { status?: string }) {
 
 export default function ProfilePage() {
   const { data: session, status } = useSession()
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   // Redirect if not logged in
   if (status === "unauthenticated") {
@@ -485,6 +487,36 @@ export default function ProfilePage() {
     // Save the PDF
     doc.save(`invoice-${offer.id.slice(0, 8)}.pdf`);
   }
+
+  // Add a useEffect to handle refresh query param
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('refresh') === '1') {
+      // Refetch offers
+      (async () => {
+        setLoading(true);
+        try {
+          const offersResponse = await fetch('/api/user/offers');
+          if (offersResponse.ok) {
+            const offersData = await offersResponse.json();
+            setOffers(offersData);
+          }
+          const offersReceivedResponse = await fetch('/api/user/offers-received');
+          if (offersReceivedResponse.ok) {
+            const offersReceivedData = await offersReceivedResponse.json();
+            setOffersReceived(offersReceivedData);
+          }
+        } finally {
+          setLoading(false);
+        }
+      })();
+      // Remove the refresh param from the URL
+      params.delete('refresh');
+      const newUrl = window.location.pathname + (params.toString() ? `?${params.toString()}` : '');
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, []);
 
   if (loading) {
     return (
@@ -1069,6 +1101,8 @@ export default function ProfilePage() {
                                         {offerActionLoading === offer.id + 'REJECTED' ? 'Rejecting...' : 'Reject'}
                                       </Button>
                                     </>
+                                  ) : offer.status === 'ACCEPTED' && offer.paymentStatus === 'PAID' ? (
+                                    <div className="text-green-400 font-semibold">Paid / Awaiting Shipment</div>
                                   ) : null}
                                 </div>
                                 <Button
